@@ -1,7 +1,7 @@
 #include <wx/wx.h>
 #include <wx/graphics.h>
 #include <wx/window.h>
-#include "Resource.h"
+#include "chitr/Resource.h"
 #include "IconsMaterialDesign.h"
 
 Resource::Resource()
@@ -34,7 +34,7 @@ wxBitmap Resource::GetIconAsBitmap(const char* utf8IconCode, int size, const wxC
 
     wxBitmap bmp(img);
     wxMemoryDC memDC(bmp);
-    
+
     std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(memDC));
 
     if (gc) {

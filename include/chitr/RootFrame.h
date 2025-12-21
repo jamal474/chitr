@@ -90,7 +90,7 @@ class RootFrame : public wxFrame
     void stopHandler(wxCommandEvent&);
     void nextVideoHandler(wxCommandEvent&);
     void volumeChangeHandler(wxCommandEvent&);
-    bool LoadEmbeddedFont();
+    void LoadEmbeddedFont();
 
     std::vector<wxString> GetFilesInDirectory(const wxString& dirPath);
 

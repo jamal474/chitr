@@ -1,4 +1,4 @@
-#include "VideoPlayback.h"
+#include "chitr/VideoPlayback.h"
 #include <exception>
 #include <iostream>
 #include <wx/wx.h>
