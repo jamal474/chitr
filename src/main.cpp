@@ -11,6 +11,7 @@ class Chitr : public wxApp {
 public:
     virtual bool OnInit() wxOVERRIDE {
         RootFrame *rootFrame = new RootFrame("Chitr : Media Player");
+        wxLog::SetLogLevel(wxLOG_Info);
         rootFrame->Show(true);
         return true;
     }

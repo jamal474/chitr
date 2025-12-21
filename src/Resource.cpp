@@ -1,55 +1,56 @@
 #include <wx/wx.h>
+#include <wx/graphics.h>
+#include <wx/window.h>
 #include "Resource.h"
-#include "../assets/upload"
-#include "../assets/next"
-#include "../assets/previous"
-#include "../assets/slideshow"
-#include "../assets/close"
-#include "../assets/play"
-#include "../assets/pause"
-#include "../assets/stop"
-#include "../assets/volume"
-#include "../assets/music"
-#include "../assets/image"
+#include "IconsMaterialDesign.h"
 
 Resource::Resource()
 {
-    headerBackgroundColour = wxColour(131, 151, 136);
-    bodyBackgroundColour = wxColour(54, 65, 62);
-    footerBackgroundColour = wxColour(238,224,203);
+    headerBackgroundColour = wxColour(45, 55, 52);
+    bodyBackgroundColour   = wxColour(30, 33, 32);
+    footerBackgroundColour = wxColour(38, 42, 41);
 
-    uploadIcon = wxBITMAP(upload).ConvertToImage();
-    uploadIcon = uploadIcon.Scale(40, 40, wxIMAGE_QUALITY_HIGH);
+    int iconSize = wxWindow::FromDIP(40, (wxWindow*)NULL); 
 
-    nextIcon = wxBITMAP(next).ConvertToImage();
-    nextIcon = nextIcon.Scale(40, 40, wxIMAGE_QUALITY_HIGH);
+    uploadIcon =    GetIconAsBitmap(ICON_MD_FILE_UPLOAD, iconSize, *wxWHITE);
+    nextIcon =      GetIconAsBitmap(ICON_MD_SKIP_NEXT, iconSize, *wxWHITE);
+    previousIcon =  GetIconAsBitmap(ICON_MD_SKIP_PREVIOUS, iconSize, *wxWHITE);
+    slideshowIcon = GetIconAsBitmap(ICON_MD_SLIDESHOW, iconSize, *wxWHITE);
+    closeIcon =     GetIconAsBitmap(ICON_MD_CLOSE, iconSize, *wxWHITE);
+    playIcon =      GetIconAsBitmap(ICON_MD_PLAY_ARROW, iconSize, *wxWHITE);
+    stopIcon =      GetIconAsBitmap(ICON_MD_STOP, iconSize, *wxWHITE);
+    pauseIcon =     GetIconAsBitmap(ICON_MD_PAUSE, iconSize, *wxWHITE);
+    volumeIcon =    GetIconAsBitmap(ICON_MD_VOLUME_UP, iconSize, *wxWHITE);
+    imageIcon =     GetIconAsBitmap(ICON_MD_IMAGE, iconSize, *wxWHITE);
+    musicIcon =     GetIconAsBitmap(ICON_MD_LIBRARY_MUSIC, iconSize, *wxWHITE);
+}
 
-    previousIcon = wxBITMAP(previous).ConvertToImage();
-    previousIcon = previousIcon.Scale(40, 40, wxIMAGE_QUALITY_HIGH);
+wxBitmap Resource::GetIconAsBitmap(const char* utf8IconCode, int size, const wxColour& fgColor) {
 
-    slideshowIcon = wxBITMAP(slideshow).ConvertToImage();
-    slideshowIcon = slideshowIcon.Scale(40, 40, wxIMAGE_QUALITY_HIGH);
+    wxImage img(size, size);
+    img.InitAlpha();
+    unsigned char* alpha = img.GetAlpha();
+    memset(alpha, 0, size * size); 
 
-    closeIcon = wxBITMAP(close).ConvertToImage();
-    closeIcon = closeIcon.Scale(40, 40, wxIMAGE_QUALITY_HIGH);
+    wxBitmap bmp(img);
+    wxMemoryDC memDC(bmp);
+    
+    std::unique_ptr<wxGraphicsContext> gc(wxGraphicsContext::Create(memDC));
 
-    playIcon = wxBITMAP(play).ConvertToImage();
-    playIcon = playIcon.Scale(40, 40, wxIMAGE_QUALITY_HIGH);
+    if (gc) {
+        wxString text = wxString::FromUTF8(utf8IconCode);
+        wxDouble width, height, descent, externalLeading;
+        double radius = size / 2.0; 
+        wxFont iconFont(wxFontInfo(size * 0.6).FaceName("Material Icons"));
 
-    stopIcon = wxBITMAP(stop).ConvertToImage();
-    stopIcon = stopIcon.Scale(40, 40, wxIMAGE_QUALITY_HIGH);
+        gc->SetBrush(wxBrush(bodyBackgroundColour));
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->DrawRoundedRectangle(0, 0, size, size, radius);
+        gc->SetFont(iconFont, fgColor);
+        gc->GetTextExtent(text, &width, &height, &descent, &externalLeading);
+        gc->DrawText(text, (size - width) / 2.0, (size - height) / 2.0);
+    }
 
-    pauseIcon = wxBITMAP(pause).ConvertToImage();
-    pauseIcon = pauseIcon.Scale(40, 40, wxIMAGE_QUALITY_HIGH);
-
-    volumeIcon = wxBITMAP(volume).ConvertToImage();
-    volumeIcon = volumeIcon.Scale(40, 40, wxIMAGE_QUALITY_HIGH);
-
-    imageIcon = wxBITMAP(image).ConvertToImage();
-    imageIcon =imageIcon.Scale(80, 80, wxIMAGE_QUALITY_HIGH);
-
-    musicIcon = wxBITMAP(music).ConvertToImage();
-    musicIcon = musicIcon.Scale(40, 40, wxIMAGE_QUALITY_HIGH);
-
-
+    memDC.SelectObject(wxNullBitmap);
+    return bmp;
 }

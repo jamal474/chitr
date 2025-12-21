@@ -17,18 +17,21 @@ class Resource
     wxColour        bodyBackgroundColour;
     wxColour        footerBackgroundColour;
 
-    wxImage         uploadIcon;
-    wxImage         nextIcon;
-    wxImage         previousIcon;
-    wxImage         slideshowIcon;
-    wxImage         closeIcon;
-    wxImage         playIcon;
-    wxImage         stopIcon;
-    wxImage         pauseIcon;
-    wxImage         volumeIcon;
-    wxImage         imageIcon;
-    wxImage         musicIcon;
+    wxBitmap        uploadIcon;
+    wxBitmap        nextIcon;
+    wxBitmap        previousIcon;
+    wxBitmap        slideshowIcon;
+    wxBitmap        closeIcon;
+    wxBitmap        playIcon;
+    wxBitmap        stopIcon;
+    wxBitmap        pauseIcon;
+    wxBitmap        volumeIcon;
+    wxBitmap        imageIcon;
+    wxBitmap        musicIcon;
 
 
     Resource();
+
+    private :
+    wxBitmap GetIconAsBitmap(const char* utf8IconCode, int size, const wxColour& color);
 };

@@ -10,6 +10,7 @@ class Chitr(ConanFile):
 
     def requirements(self):
         self.requires("wxwidgets/3.2.8")
+        self.requires("iconfontcppheaders/cci.20240620")
 
     def generate(self):
             deps = CMakeDeps(self)
