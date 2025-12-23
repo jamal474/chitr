@@ -23,6 +23,8 @@ RootFrame::RootFrame(const wxString &title) : wxFrame(NULL, wxID_ANY, title),
     // set application icon displayed on left of title bar
     LoadEmbeddedFont();
     
+    // 2. Initialize assets explicitly AFTER font is loaded
+    assets = std::make_unique<Resource>();
     // this->SetIcon(wxICON(photo));
 
     /**
@@ -101,22 +103,22 @@ void RootFrame::initImagePage()
     currentImagePanel   = new wxPanel(imagePagePanel);
     imageControlSizer   = new wxBoxSizer(wxHORIZONTAL);
     currentImageSizer   = new wxBoxSizer(wxHORIZONTAL);
-    imageView           = new wxStaticBitmap(currentImagePanel, wxID_ANY, assets.imageIcon);
+    imageView           = new wxStaticBitmap(currentImagePanel, wxID_ANY, assets->imageIcon);
     prevButton          = new wxButton(imageControlPanel, ID::PREV_IMAGE_BUTTON, "Prev Image", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
-    uploadImageButton   = new wxButton(imageControlPanel, ID::UPLOAD_IMAGE_BUTTON, "Upload Image", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE); // wxBORDER_NONE
+    uploadImageButton   = new wxBitmapButton(imageControlPanel, ID::UPLOAD_IMAGE_BUTTON, assets->uploadIcon, wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxNO_BORDER); // wxBORDER_NONE
     nextButton          = new wxButton(imageControlPanel, ID::NEXT_IMAGE_BUTTON, "Next Image", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
     slideShowButton     = new wxButton(imageControlPanel, ID::SLIDESHOW_BUTTON, "Slideshow", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
 
     // set Primary Colour and Secondary Colour
     // Panels are coloured here
-    imageControlPanel->SetBackgroundColour(assets.footerBackgroundColour);
-    currentImagePanel->SetBackgroundColour(assets.footerBackgroundColour);
+    imageControlPanel->SetBackgroundColour(assets->footerBackgroundColour);
+    currentImagePanel->SetBackgroundColour(assets->footerBackgroundColour);
 
     // set the button icons
-    uploadImageButton->SetBitmap(assets.uploadIcon);
-    nextButton->SetBitmap(assets.nextIcon);
-    prevButton->SetBitmap(assets.previousIcon);
-    slideShowButton->SetBitmap(assets.slideshowIcon);
+    // uploadImageButton->SetBitmap(assets->uploadIcon);
+    nextButton->SetBitmap(assets->nextIcon);
+    prevButton->SetBitmap(assets->previousIcon);
+    slideShowButton->SetBitmap(assets->slideshowIcon);
 
     // set the layout setting for ImagePanel
     currentImageSizer->AddStretchSpacer(1);
@@ -176,16 +178,16 @@ void RootFrame::initVideoPage()
 
     // set Primary Colour and Secondary Colour
     // Panels are coloured here
-    currentVideoPanel->SetBackgroundColour(assets.footerBackgroundColour);
-    videoControlPanel->SetBackgroundColour(assets.footerBackgroundColour);
+    currentVideoPanel->SetBackgroundColour(assets->footerBackgroundColour);
+    videoControlPanel->SetBackgroundColour(assets->footerBackgroundColour);
 
     // set the button icons
-    volIcon->SetBitmap(assets.volumeIcon);
-    uploadButton->SetBitmap(assets.uploadIcon);
-    playPauseButton->SetBitmap(assets.playIcon);
-    previousVideoButton->SetBitmap(assets.previousIcon);
-    stopButton->SetBitmap(assets.stopIcon);
-    nextVideoButton->SetBitmap(assets.nextIcon);
+    volIcon->SetBitmap(assets->volumeIcon);
+    uploadButton->SetBitmap(assets->uploadIcon);
+    playPauseButton->SetBitmap(assets->playIcon);
+    previousVideoButton->SetBitmap(assets->previousIcon);
+    stopButton->SetBitmap(assets->stopIcon);
+    nextVideoButton->SetBitmap(assets->nextIcon);
 
     // set layout setting for video/music panel
     currentVideoSizer->AddStretchSpacer(1);
@@ -387,13 +389,13 @@ void RootFrame::slideshowOpenClose(wxCommandEvent &evt)
     if (slideShowFlag)
     {
         slideShowTimer.Start(2000);
-        slideShowButton->SetBitmap(assets.closeIcon);
+        slideShowButton->SetBitmap(assets->closeIcon);
         this->SetTitle("Chitr | Image Slideshow");
     }
     else
     {
         slideShowTimer.Stop();
-        slideShowButton->SetBitmap(assets.slideshowIcon);
+        slideShowButton->SetBitmap(assets->slideshowIcon);
         this->SetTitle("Chitr | " + std::string(wxFileName(imgPlayBack->getImageByIndex(imgPlayBack->getCurrentIndex())).GetFullName().mb_str()));
     }
 }
@@ -431,13 +433,13 @@ void RootFrame::playPauseHandler(wxCommandEvent &)
     {
         videoView->Play();
         isPlaying = true;
-        playPauseButton->SetBitmap(assets.pauseIcon);
+        playPauseButton->SetBitmap(assets->pauseIcon);
     }
     else
     {
         videoView->Pause();
         isPlaying = false;
-        playPauseButton->SetBitmap(assets.playIcon);
+        playPauseButton->SetBitmap(assets->playIcon);
     }
 }
 
@@ -445,7 +447,7 @@ void RootFrame::stopHandler(wxCommandEvent &)
 {
     videoView->Stop();
     isPlaying = false;
-    playPauseButton->SetBitmap(assets.playIcon);
+    playPauseButton->SetBitmap(assets->playIcon);
     volumeSlider->SetValue(100);
     videoView->SetVolume(1.0);
 }

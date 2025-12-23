@@ -28,15 +28,15 @@ class RootFrame : public wxFrame
  *  4. all the widgets pointers wxButton, wxPanels, wxBoxSizers
  *  5. All handlers for both the image viewer and video/music player
 */
-    ImagePlayback   *imgPlayBack;
-    VideoPlayback   *vidPlayBack;
-    wxNotebook      *notebook;
+    ImagePlayback              *imgPlayBack;
+    VideoPlayback              *vidPlayBack;
+    wxNotebook                 *notebook;
 
-    wxStaticBitmap  *imageView;
-    wxMediaCtrl     *videoView;
+    wxStaticBitmap              *imageView;
+    wxMediaCtrl                 *videoView;
     wxSlider        *volumeSlider;
 
-    wxButton        *uploadImageButton;
+    wxBitmapButton        *uploadImageButton;
     wxButton        *nextButton;
     wxButton        *prevButton;
     wxButton        *slideShowButton;
@@ -51,21 +51,21 @@ class RootFrame : public wxFrame
     double          volume;
     wxTimer         slideShowTimer;
 
-    wxPanel         *imageControlPanel;
-    wxPanel         *currentImagePanel;
-    wxPanel         *imagePagePanel;
-    wxPanel         *videoPagePanel;
-    wxPanel         *currentVideoPanel;
-    wxPanel         *videoControlPanel;
+    wxPanel                     *imageControlPanel;
+    wxPanel                     *currentImagePanel;
+    wxPanel                     *imagePagePanel;
+    wxPanel                     *videoPagePanel;
+    wxPanel                     *currentVideoPanel;
+    wxPanel                     *videoControlPanel;
 
-    wxBoxSizer      *mainSizer;
-    wxBoxSizer      *imagePageSizer;
-    wxBoxSizer      *videoPageSizer;
-    wxBoxSizer      *imageControlSizer;
-    wxBoxSizer      *currentImageSizer;
-    wxBoxSizer      *currentVideoSizer;
-    wxBoxSizer      *videoControlSizer;
-    Resource        assets;
+    wxBoxSizer                  *mainSizer;
+    wxBoxSizer                  *imagePageSizer;
+    wxBoxSizer                  *videoPageSizer;
+    wxBoxSizer                  *imageControlSizer;
+    wxBoxSizer                  *currentImageSizer;
+    wxBoxSizer                  *currentVideoSizer;
+    wxBoxSizer                  *videoControlSizer;
+    std::unique_ptr<Resource>   assets;
 
     // Initialize widgets
     void initImagePage();

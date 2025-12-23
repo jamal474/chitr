@@ -5,11 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# -----------------------------------------------------------------------------
-# 1. Log Level Configuration
-# -----------------------------------------------------------------------------
-# Default level is 1 (e.g., INFO). User can change this via command line:
-# cmake -DCHITR_LOG_LEVEL=3 ..
 set(CHITR_LOG_LEVEL 1 CACHE STRING "Set Log Level (0=OFF, 1=ERROR, 2=INFO, 3=DEBUG)")
 
 add_compile_definitions(CHITR_LOG_LEVEL=${CHITR_LOG_LEVEL})
@@ -32,10 +27,10 @@ set(SOURCES
 
 add_executable(PhotoViewer ${SOURCES})
 
-# -----------------------------------------------------------------------------
-# 4. Include Directories & Linking
-# -----------------------------------------------------------------------------
-# This allows you to do #include "chitr/RootFrame.h" inside your code
+if(MSVC)
+    set_target_properties(PhotoViewer PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")
+endif()
+
 target_include_directories(PhotoViewer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(PhotoViewer PRIVATE 
@@ -49,13 +44,12 @@ target_compile_options(PhotoViewer PRIVATE
 )
 
 set(FONT_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/assets/font_ttf/material_v1.ttf")
-set(FONT_DEST "${CMAKE_BINARY_DIR}/Fonts/material_v1.ttf")
-
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/Fonts")
-
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+add_custom_command(TARGET PhotoViewer POST_BUILD
+   
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PhotoViewer>/Fonts"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     "${FONT_SOURCE}"
-    "${FONT_DEST}"
+    "$<TARGET_FILE_DIR:PhotoViewer>/Fonts/material_v1.ttf"
+    
     COMMENT "Copying Fonts to output directory"
 )

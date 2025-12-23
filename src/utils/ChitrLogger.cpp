@@ -65,10 +65,10 @@ void ChitrLogger::logInternal(LogLevel level, const char* file, int line, const 
     std::string color;
 
     switch (level) {
-        case LogLevel::DEBUG: levelStr = "[DEBUG]"; color = CYAN_COLOR; break;
-        case LogLevel::INFO:  levelStr = "[INFO] "; color = GREEN_COLOR; break;
-        case LogLevel::WARN:  levelStr = "[WARN] "; color = YELLOW_COLOR; break;
-        case LogLevel::ERROR: levelStr = "[ERROR]"; color = RED_COLOR; break;
+        case LogLevel::Debug: levelStr = "[DEBUG]"; color = CYAN_COLOR; break;
+        case LogLevel::Info:  levelStr = "[INFO] "; color = GREEN_COLOR; break;
+        case LogLevel::Warn:  levelStr = "[WARN] "; color = YELLOW_COLOR; break;
+        case LogLevel::Error: levelStr = "[ERROR]"; color = RED_COLOR; break;
         default: levelStr = "[UNKNOWN]"; color = RESET_COLOR; break;
     }
 

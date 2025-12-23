@@ -7,11 +7,11 @@
 #include <type_traits>
 
 enum class LogLevel {
-    DEBUG   = 0,
-    INFO    = 1,
-    WARN    = 2,
-    ERROR   = 3,
-    OFF     = 4
+    Debug   = 0,
+    Info    = 1,
+    Warn    = 2,
+    Error   = 3,
+    Off     = 4
 };
 
 #ifndef CHITR_ACTIVE_LEVEL
@@ -57,25 +57,25 @@ private:
 
 
 #if CHITR_ACTIVE_LEVEL <= 0
-    #define LOG_DEBUG(...) ChitrLogger::getInstance().log(LogLevel::DEBUG, __FILE__, __LINE__, __VA_ARGS__)
+    #define LOG_DEBUG(...) ChitrLogger::getInstance().log(LogLevel::Debug, __FILE__, __LINE__, __VA_ARGS__)
 #else
     #define LOG_DEBUG(...) void(0)
 #endif
 
 #if CHITR_ACTIVE_LEVEL <= 1
-    #define LOG_INFO(...)  ChitrLogger::getInstance().log(LogLevel::INFO, __FILE__, __LINE__, __VA_ARGS__)
+    #define LOG_INFO(...)  ChitrLogger::getInstance().log(LogLevel::Info, __FILE__, __LINE__, __VA_ARGS__)
 #else
     #define LOG_INFO(...)  void(0)
 #endif
 
 #if CHITR_ACTIVE_LEVEL <= 2
-    #define LOG_WARN(...)  ChitrLogger::getInstance().log(LogLevel::WARN, __FILE__, __LINE__, __VA_ARGS__)
+    #define LOG_WARN(...)  ChitrLogger::getInstance().log(LogLevel::Warn, __FILE__, __LINE__, __VA_ARGS__)
 #else
     #define LOG_WARN(...)  void(0)
 #endif
 
 #if CHITR_ACTIVE_LEVEL <= 3
-    #define LOG_ERROR(...) ChitrLogger::getInstance().log(LogLevel::ERROR, __FILE__, __LINE__, __VA_ARGS__)
+    #define LOG_ERROR(...) ChitrLogger::getInstance().log(LogLevel::Error, __FILE__, __LINE__, __VA_ARGS__)
 #else
     #define LOG_ERROR(...) void(0)
 #endif

@@ -13,4 +13,4 @@ public:
     }
 };
 
-wxIMPLEMENT_APP(Chitr);
+wxIMPLEMENT_APP_CONSOLE(Chitr);

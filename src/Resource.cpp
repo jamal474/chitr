@@ -2,6 +2,7 @@
 #include <wx/graphics.h>
 #include <wx/window.h>
 #include "chitr/Resource.h"
+#include "chitr/ChitrLogger.h"
 #include "IconsMaterialDesign.h"
 
 Resource::Resource()
@@ -26,7 +27,8 @@ Resource::Resource()
 }
 
 wxBitmap Resource::GetIconAsBitmap(const char* utf8IconCode, int size, const wxColour& fgColor) {
-
+    
+    LOG_INFO("Getting Icons: %s", utf8IconCode);
     wxImage img(size, size);
     img.InitAlpha();
     unsigned char* alpha = img.GetAlpha();
@@ -43,12 +45,21 @@ wxBitmap Resource::GetIconAsBitmap(const char* utf8IconCode, int size, const wxC
         double radius = size / 2.0; 
         wxFont iconFont(wxFontInfo(size * 0.6).FaceName("Material Icons"));
 
+        if(!iconFont.IsOk())
+        {
+            LOG_ERROR("Failed to Create Icon Font");
+        }
+
         gc->SetBrush(wxBrush(bodyBackgroundColour));
         gc->SetPen(*wxTRANSPARENT_PEN);
         gc->DrawRoundedRectangle(0, 0, size, size, radius);
         gc->SetFont(iconFont, fgColor);
         gc->GetTextExtent(text, &width, &height, &descent, &externalLeading);
         gc->DrawText(text, (size - width) / 2.0, (size - height) / 2.0);
+    }
+    else
+    {
+        LOG_ERROR("Could Not Create Graphics Context");
     }
 
     memDC.SelectObject(wxNullBitmap);
