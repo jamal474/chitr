@@ -8,28 +8,17 @@
 #include <wx/fontenum.h>
 #include <wx/filename.h>
 #include <wx/wx.h>
+#include <wx/icon.h>
 
 MainFrame::MainFrame(const wxString &title) : wxFrame(NULL, wxID_ANY, title)
 {
    
     LoadEmbeddedFont();
     LoadImageHandlers();
+    LoadAppIcon();
 
     assets = std::make_shared<Resource>();
-    wxString exePath = wxStandardPaths::Get().GetExecutablePath();
-    wxString exeDir = wxFileName(exePath).GetPath();
-
-    wxString iconPath = exeDir + "/Assets/MainIcon.png";
-
-    if (wxFileName::FileExists(iconPath)) {
-        wxIcon appIcon;
-        appIcon.LoadFile(iconPath, wxBITMAP_TYPE_PNG);
-        
-        this->SetIcon(appIcon);
-        LOG_INFO("App icon loaded from: %s", iconPath.ToStdString());
-    } else {
-        LOG_ERROR("Could not find icon at: %s", iconPath.ToStdString());
-    }
+    
 
 
     notebook        = new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxNB_TOP);
@@ -41,9 +30,9 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(NULL, wxID_ANY, title)
     mainSizer       = new wxBoxSizer(wxVERTICAL);
 
     // notebook->SetForegroundColour(*wxBLACK);
-    // notebook->SetBackgroundColour(assets.headerBackgroundColour);
-    notebook->AddPage(imagePanel->rootPanel, "Image Player");
-    notebook->AddPage(videoPanel->rootPanel, "Music Player");
+    
+    notebook->AddPage(imagePanel->getRootPanel(), "Image Player");
+    notebook->AddPage(videoPanel->getRootPanel(), "Video Player");
 
     mainSizer->Add(notebook, 1, wxEXPAND);
     SetSizerAndFit(mainSizer);
@@ -93,4 +82,21 @@ void MainFrame::LoadImageHandlers() {
     wxImage::AddHandler(new wxXPMHandler);
 
     LOG_INFO("Image Handlers Loaded");
+}
+
+void MainFrame::LoadAppIcon() {
+    wxString exePath = wxStandardPaths::Get().GetExecutablePath();
+    wxString exeDir = wxFileName(exePath).GetPath();
+
+    wxString iconPath = exeDir + "/Assets/MainIcon.png";
+
+    if (wxFileName::FileExists(iconPath)) {
+        wxIcon appIcon;
+        appIcon.LoadFile(iconPath, wxBITMAP_TYPE_PNG);
+        
+        this->SetIcon(appIcon);
+        LOG_INFO("App icon loaded from: %s", iconPath.ToStdString());
+    } else {
+        LOG_ERROR("Could not find icon at: %s", iconPath.ToStdString());
+    }
 }

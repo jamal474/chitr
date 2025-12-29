@@ -48,7 +48,7 @@ void VideoPanel::init() {
     stopButton          = new wxButton(controlPanel, wxID_ANY, "Stop", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
     nextButton          = new wxButton(controlPanel, wxID_ANY, "Next Video", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
     volumeSlider        = new wxSlider(controlPanel, wxID_ANY, 100, 0, 100,wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
-    volIcon             = new wxStaticBitmap(controlPanel, wxID_ANY, wxBitmap());
+    volumeIcon          = new wxStaticBitmap(controlPanel, wxID_ANY, wxBitmap());
     isPlaying           = (false);
     volume              = (1.0);
 
@@ -57,15 +57,15 @@ void VideoPanel::init() {
 
 void VideoPanel::setSizers() {
 
-    visualPanel->SetBackgroundColour(assets->footerBackgroundColour);
-    controlPanel->SetBackgroundColour(assets->footerBackgroundColour);
+    visualPanel->SetBackgroundColour(assets->getPrimaryColour());
+    controlPanel->SetBackgroundColour(assets->getPrimaryColour());
 
-    volIcon->SetBitmap(assets->volumeIcon);
-    uploadButton->SetBitmap(assets->uploadIcon);
-    playPauseButton->SetBitmap(assets->playIcon);
-    previousButton->SetBitmap(assets->previousIcon);
-    stopButton->SetBitmap(assets->stopIcon);
-    nextButton->SetBitmap(assets->nextIcon);
+    volumeIcon->SetBitmap(assets->getVolumeIcon());
+    uploadButton->SetBitmap(assets->getUploadIcon());
+    playPauseButton->SetBitmap(assets->getPlayIcon());
+    previousButton->SetBitmap(assets->getPreviousIcon());
+    stopButton->SetBitmap(assets->getStopIcon());
+    nextButton->SetBitmap(assets->getNextIcon());
 
     visualSizer->AddStretchSpacer(1);
     visualSizer->Add(mediaPlayer, 4, wxEXPAND | wxALL, 5);
@@ -79,7 +79,7 @@ void VideoPanel::setSizers() {
     controlSizer->Add(stopButton, 0, wxCENTER | wxALL, 5);
     controlSizer->Add(nextButton, 0, wxCENTER | wxALL, 5);
     controlSizer->AddStretchSpacer(1);
-    controlSizer->Add(volIcon, 0, wxEXPAND | wxALL, 5);
+    controlSizer->Add(volumeIcon, 0, wxEXPAND | wxALL, 5);
     controlSizer->Add(volumeSlider, 0, wxEXPAND | wxALL, 5);
 
     controlPanel->SetSizer(controlSizer);
@@ -155,12 +155,12 @@ void VideoPanel::playPauseHandler(wxCommandEvent &event) {
     if (mediaPlayer->Tell() == 0 || !isPlaying) {
         mediaPlayer->Play();
         isPlaying = true;
-        playPauseButton->SetBitmap(assets->pauseIcon);
+        playPauseButton->SetBitmap(assets->getPauseIcon());
         LOG_INFO("Playback Started");
     } else {
         mediaPlayer->Pause();
         isPlaying = false;
-        playPauseButton->SetBitmap(assets->playIcon);
+        playPauseButton->SetBitmap(assets->getPlayIcon());
         LOG_INFO("Playback Paused");
     }
 }
@@ -169,7 +169,7 @@ void VideoPanel::stopHandler(wxCommandEvent &event) {
 
     mediaPlayer->Stop();
     isPlaying = false;
-    playPauseButton->SetBitmap(assets->playIcon);
+    playPauseButton->SetBitmap(assets->getPlayIcon());
     volumeSlider->SetValue(100);
     mediaPlayer->SetVolume(1.0);
     LOG_INFO("Playback Stopped");
@@ -222,4 +222,9 @@ std::vector<wxString> VideoPanel::GetFilesInDirectory(const wxString &dirPath)
         }
     }
     return files;
+}
+
+wxPanel *VideoPanel::getRootPanel()
+{
+    return rootPanel;
 }

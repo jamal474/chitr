@@ -6,12 +6,15 @@
 class MainFrame : public wxFrame {
 
 private:
+
+    void LoadEmbeddedFont();
+    void LoadImageHandlers();
+    void LoadAppIcon();
+
     wxNotebook                   *notebook;
     wxBoxSizer                   *mainSizer;
     std::shared_ptr<Resource>    assets;
-    
-    void LoadEmbeddedFont();
-    void LoadImageHandlers();
+
 public:
     MainFrame(const wxString &title); 
 

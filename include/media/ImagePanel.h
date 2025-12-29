@@ -13,6 +13,9 @@ class ImagePanel: public MediaPanel {
 
 protected:
     virtual std::vector<wxString> GetFilesInDirectory(const wxString& dirPath) override;
+    virtual void init() override;
+    virtual void setSizers() override;
+    virtual void setBindings() override;
 
 private:
     void uploadHandler(wxCommandEvent &event);
@@ -22,13 +25,6 @@ private:
     void nextHandler(wxCommandEvent &event);
     void previousHandler(wxCommandEvent &event);
 
-public:
-    ImagePanel(wxFrame *, wxNotebook *, std::shared_ptr<Resource>);
-    virtual void init() override;
-    virtual void setSizers() override;
-    virtual void setBindings() override;
-
-    //check which members can be changed to private
     wxStaticBitmap      *imageViewer;
     wxButton            *uploadButton;
     wxButton            *nextButton;
@@ -37,5 +33,8 @@ public:
     bool                slideShowFlag;
     wxTimer             slideShowTimer;
     ImageContext        *context;
-    
+
+public:
+    ImagePanel(wxFrame *, wxNotebook *, std::shared_ptr<Resource>);
+    wxPanel *getRootPanel() override;
 };

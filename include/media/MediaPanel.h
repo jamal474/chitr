@@ -8,21 +8,23 @@
 
 class MediaPanel {
 
-public :
-    wxFrame         *mainFrame;
-    wxPanel         *rootPanel;
-    wxPanel         *visualPanel;
-    wxPanel         *controlPanel;
-
-    wxBoxSizer      *rootSizer;
-    wxBoxSizer      *visualSizer;
-    wxBoxSizer      *controlSizer;
-
-    std::shared_ptr<Resource> assets;
+protected :
 
     virtual void init() = 0;
     virtual void setSizers() = 0;
     virtual void setBindings() = 0;
-protected :
     virtual std::vector<wxString> GetFilesInDirectory(const wxString& dirPath) = 0;
+
+    wxFrame                     *mainFrame;
+    wxPanel                     *rootPanel;
+    wxPanel                     *visualPanel;
+    wxPanel                     *controlPanel;
+    wxBoxSizer                  *rootSizer;
+    wxBoxSizer                  *visualSizer;
+    wxBoxSizer                  *controlSizer;
+    std::shared_ptr<Resource>   assets;
+
+public :
+    virtual wxPanel *getRootPanel() = 0;
+
 };

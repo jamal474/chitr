@@ -3,12 +3,12 @@
 
 class Resource
 {
-    public :
+private :
 
-    wxColour        headerBackgroundColour;
-    wxColour        bodyBackgroundColour;
-    wxColour        footerBackgroundColour;
+    wxBitmap GetIconAsBitmap(const char* utf8IconCode, int size, const wxColour& color);
 
+    wxColour        primaryColour;
+    wxColour        secondaryColour;
     wxBitmap        uploadIcon;
     wxBitmap        nextIcon;
     wxBitmap        previousIcon;
@@ -21,9 +21,21 @@ class Resource
     wxBitmap        imageIcon;
     wxBitmap        musicIcon;
 
-
+public:
     Resource();
 
-    private :
-    wxBitmap GetIconAsBitmap(const char* utf8IconCode, int size, const wxColour& color);
+    wxColour getPrimaryColour();
+    wxColour getSecondaryColour();
+    wxBitmap getUploadIcon();
+    wxBitmap getNextIcon();
+    wxBitmap getPreviousIcon();
+    wxBitmap getSlideshowIcon();
+    wxBitmap getCloseIcon();
+    wxBitmap getPlayIcon();
+    wxBitmap getStopIcon();
+    wxBitmap getPauseIcon();
+    wxBitmap getVolumeIcon();
+    wxBitmap getImageIcon();
+    wxBitmap getMusicIcon();
+
 };

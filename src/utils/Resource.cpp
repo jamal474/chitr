@@ -2,6 +2,8 @@
 #include <wx/graphics.h>
 #include <wx/window.h>
 #include <wx/dcmemory.h>
+#include <wx/bitmap.h>
+#include <wx/colour.h>
 #include <memory>
 #include "chitr/Resource.h"
 #include "chitr/ChitrLogger.h"
@@ -9,23 +11,22 @@
 
 Resource::Resource()
 {
-    headerBackgroundColour = wxColour(45, 55, 52);
-    bodyBackgroundColour   = wxColour(30, 33, 32);
-    footerBackgroundColour = wxColour(38, 42, 41);
+    primaryColour = wxColour(38, 42, 41);
+    secondaryColour   = wxColour(30, 33, 32);
 
     int iconSize = wxWindow::FromDIP(40, (wxWindow*)NULL); 
 
-    uploadIcon =    GetIconAsBitmap(ICON_MD_FILE_UPLOAD, iconSize, *wxWHITE);
-    nextIcon =      GetIconAsBitmap(ICON_MD_SKIP_NEXT, iconSize, *wxWHITE);
-    previousIcon =  GetIconAsBitmap(ICON_MD_SKIP_PREVIOUS, iconSize, *wxWHITE);
-    slideshowIcon = GetIconAsBitmap(ICON_MD_SLIDESHOW, iconSize, *wxWHITE);
-    closeIcon =     GetIconAsBitmap(ICON_MD_CLOSE, iconSize, *wxWHITE);
-    playIcon =      GetIconAsBitmap(ICON_MD_PLAY_ARROW, iconSize, *wxWHITE);
-    stopIcon =      GetIconAsBitmap(ICON_MD_STOP, iconSize, *wxWHITE);
-    pauseIcon =     GetIconAsBitmap(ICON_MD_PAUSE, iconSize, *wxWHITE);
-    volumeIcon =    GetIconAsBitmap(ICON_MD_VOLUME_UP, iconSize, *wxWHITE);
-    imageIcon =     GetIconAsBitmap(ICON_MD_IMAGE, iconSize, *wxWHITE);
-    musicIcon =     GetIconAsBitmap(ICON_MD_LIBRARY_MUSIC, iconSize, *wxWHITE);
+    uploadIcon      = GetIconAsBitmap(ICON_MD_FILE_UPLOAD, iconSize, *wxWHITE);
+    nextIcon        = GetIconAsBitmap(ICON_MD_SKIP_NEXT, iconSize, *wxWHITE);
+    previousIcon    = GetIconAsBitmap(ICON_MD_SKIP_PREVIOUS, iconSize, *wxWHITE);
+    slideshowIcon   = GetIconAsBitmap(ICON_MD_SLIDESHOW, iconSize, *wxWHITE);
+    closeIcon       = GetIconAsBitmap(ICON_MD_CLOSE, iconSize, *wxWHITE);
+    playIcon        = GetIconAsBitmap(ICON_MD_PLAY_ARROW, iconSize, *wxWHITE);
+    stopIcon        = GetIconAsBitmap(ICON_MD_STOP, iconSize, *wxWHITE);
+    pauseIcon       = GetIconAsBitmap(ICON_MD_PAUSE, iconSize, *wxWHITE);
+    volumeIcon      = GetIconAsBitmap(ICON_MD_VOLUME_UP, iconSize, *wxWHITE);
+    imageIcon       = GetIconAsBitmap(ICON_MD_IMAGE, iconSize, *wxWHITE);
+    musicIcon       = GetIconAsBitmap(ICON_MD_LIBRARY_MUSIC, iconSize, *wxWHITE);
 }
 
 wxBitmap Resource::GetIconAsBitmap(const char* utf8IconCode, int size, const wxColour& fgColor) {
@@ -51,7 +52,7 @@ wxBitmap Resource::GetIconAsBitmap(const char* utf8IconCode, int size, const wxC
             LOG_ERROR("Failed to Create Icon Font");
         }
 
-        gc->SetBrush(wxBrush(bodyBackgroundColour));
+        gc->SetBrush(wxBrush(secondaryColour));
         gc->SetPen(*wxTRANSPARENT_PEN);
         gc->DrawRoundedRectangle(0, 0, size, size, radius);
         gc->SetFont(iconFont, fgColor);
@@ -65,4 +66,71 @@ wxBitmap Resource::GetIconAsBitmap(const char* utf8IconCode, int size, const wxC
 
     memDC.SelectObject(wxNullBitmap);
     return bmp;
+}
+
+
+wxColour Resource::getPrimaryColour()
+{
+    return primaryColour;
+}
+
+wxColour Resource::getSecondaryColour()
+{
+    return secondaryColour;
+}
+
+
+wxBitmap Resource::getUploadIcon()
+{
+    return uploadIcon;
+}
+
+wxBitmap Resource::getNextIcon()
+{
+    return nextIcon;
+}
+
+wxBitmap Resource::getPreviousIcon()
+{
+    return previousIcon;
+}
+
+wxBitmap Resource::getSlideshowIcon()
+{
+    return slideshowIcon;
+}
+
+wxBitmap Resource::getCloseIcon()
+{
+    return closeIcon;
+}
+
+wxBitmap Resource::getPlayIcon()
+{
+    return playIcon;
+}
+
+wxBitmap Resource::getStopIcon()
+{
+    return stopIcon;
+}
+
+wxBitmap Resource::getPauseIcon()
+{
+    return pauseIcon;
+}
+
+wxBitmap Resource::getVolumeIcon()
+{
+    return volumeIcon;
+}
+
+wxBitmap Resource::getImageIcon()
+{
+    return imageIcon;
+}
+
+wxBitmap Resource::getMusicIcon()
+{
+    return musicIcon;
 }

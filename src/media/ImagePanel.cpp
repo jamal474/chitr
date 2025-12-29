@@ -35,7 +35,7 @@ void ImagePanel::init() {
     
     visualPanel         = new wxPanel(rootPanel, wxID_ANY);
     controlPanel        = new wxPanel(rootPanel, wxID_ANY);
-    imageViewer         = new wxStaticBitmap(visualPanel, wxID_ANY, assets->imageIcon);
+    imageViewer         = new wxStaticBitmap(visualPanel, wxID_ANY, assets->getImageIcon());
 
     rootSizer           = new wxBoxSizer(wxVERTICAL);
     visualSizer         = new wxBoxSizer(wxHORIZONTAL);
@@ -54,13 +54,13 @@ void ImagePanel::init() {
 
 void ImagePanel::setSizers() {
 
-    controlPanel->SetBackgroundColour(assets->footerBackgroundColour);
-    visualPanel->SetBackgroundColour(assets->footerBackgroundColour);
+    controlPanel->SetBackgroundColour(assets->getPrimaryColour());
+    visualPanel->SetBackgroundColour(assets->getPrimaryColour());
 
-    uploadButton->SetBitmap(assets->uploadIcon);
-    nextButton->SetBitmap(assets->nextIcon);
-    previousButton->SetBitmap(assets->previousIcon);
-    slideShowButton->SetBitmap(assets->slideshowIcon);
+    uploadButton->SetBitmap(assets->getUploadIcon());
+    nextButton->SetBitmap(assets->getNextIcon());
+    previousButton->SetBitmap(assets->getPreviousIcon());
+    slideShowButton->SetBitmap(assets->getSlideshowIcon());
 
     visualSizer->AddStretchSpacer(1);
     visualSizer->Add(imageViewer, 1, wxEXPAND | wxALL, 5);
@@ -142,11 +142,11 @@ void ImagePanel::slideshowOpenClose(wxCommandEvent &event) {
     if (slideShowFlag) {
         LOG_INFO("Slideshow Start");
         slideShowTimer.Start(2000);
-        slideShowButton->SetBitmap(assets->closeIcon);
+        slideShowButton->SetBitmap(assets->getCloseIcon());
     } else {
         LOG_INFO("Slideshow End");
         slideShowTimer.Stop();
-        slideShowButton->SetBitmap(assets->slideshowIcon);
+        slideShowButton->SetBitmap(assets->getSlideshowIcon());
     }
 }
 
@@ -199,4 +199,9 @@ std::vector<wxString> ImagePanel::GetFilesInDirectory(const wxString &dirPath) {
         }
     }
     return files;
+}
+
+wxPanel *ImagePanel::getRootPanel()
+{
+    return rootPanel;
 }

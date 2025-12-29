@@ -12,6 +12,9 @@ class VideoPanel: public MediaPanel {
 
 protected:
     virtual std::vector<wxString> GetFilesInDirectory(const wxString& dirPath) override;
+    virtual void init() override;
+    virtual void setSizers() override;
+    virtual void setBindings() override;
 
 private:
     void uploadHandler(wxCommandEvent &event);
@@ -22,13 +25,6 @@ private:
     void previousHandler(wxCommandEvent &event);
     void volumeHandler(wxCommandEvent &event);
 
-public:
-    VideoPanel(wxFrame *, wxNotebook *, std::shared_ptr<Resource>);
-    virtual void init() override;
-    virtual void setSizers() override;
-    virtual void setBindings() override;
-    
-    //check which members can be changed to private
     wxMediaCtrl     *mediaPlayer;
     wxSlider        *volumeSlider;
     wxButton        *uploadButton;
@@ -36,9 +32,13 @@ public:
     wxButton        *nextButton;
     wxButton        *previousButton;
     wxButton        *playPauseButton;
-    wxStaticBitmap  *volIcon;
+    wxStaticBitmap  *volumeIcon;
     bool            isPlaying;
     double          volume;
-    VideoContext   *context;
+    VideoContext    *context;
+
+public:
+    VideoPanel(wxFrame *, wxNotebook *, std::shared_ptr<Resource>);
+    wxPanel *getRootPanel() override;
     
 };
