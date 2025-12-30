@@ -12,7 +12,7 @@
 class ImagePanel: public MediaPanel {
 
 protected:
-    virtual std::vector<wxString> GetFilesInDirectory(const wxString& dirPath) override;
+    virtual std::vector<wxFileName *> GetFilesInDirectory(const wxString& dirPath) override;
     virtual void init() override;
     virtual void setSizers() override;
     virtual void setBindings() override;

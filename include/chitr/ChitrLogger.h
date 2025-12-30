@@ -2,6 +2,7 @@
 #define CHITR_LOGGER_H
 
 #include <string>
+#include <wx/string.h>
 #include <mutex>
 #include <cstdarg>
 #include <type_traits>
@@ -34,7 +35,7 @@ public:
 
     template<typename... Args>
     void log(LogLevel level, const char* file, int line, const char* format, Args... args) {
-        logInternal(level, file, line, format, chitr_arg(args)...);
+        logInternal(level, file, line, format, chitr_arg(prepare_arg(args))...);
     }
 
 private:
@@ -44,6 +45,15 @@ private:
     std::mutex logMutex;
     std::string getCurrentTime();
     std::string getFileName(const char* filepath);
+
+    template<typename T>
+    static const T& prepare_arg(const T& t) {
+        return t;
+    }
+
+    static std::string prepare_arg(const wxString& s) {
+        return s.ToStdString();
+    }
 
     static const char* chitr_arg(const std::string& s) {
         return s.c_str();

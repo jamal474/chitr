@@ -4,6 +4,7 @@
 #include "chitr/Resource.h"
 #include <memory>
 #include <vector>
+#include <optional>
 #include <wx/filename.h>
 #include <wx/dir.h>
 #include <wx/wx.h>
@@ -11,6 +12,7 @@
 #include <wx/event.h>
 #include <wx/mediactrl.h>
 #include <wx/file.h>
+#include <wx/filedlg.h>
 
 VideoPanel::VideoPanel(wxFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Resource> resourceAsset) {
     
@@ -57,7 +59,7 @@ void VideoPanel::init() {
 
 void VideoPanel::setSizers() {
 
-    visualPanel->SetBackgroundColour(assets->getPrimaryColour());
+    visualPanel->SetBackgroundColour(*wxBLACK);
     controlPanel->SetBackgroundColour(assets->getPrimaryColour());
 
     volumeIcon->SetBitmap(assets->getVolumeIcon());
@@ -124,19 +126,22 @@ void VideoPanel::uploadHandler(wxCommandEvent &event) {
         wxFileName directory(videoFilePath);
         wxString directoryPath = directory.GetPath();
 
-        std::vector<wxString> files = GetFilesInDirectory(directoryPath);
-        int index = 0;
-        LOG_INFO("Found %d [Image/Video] Files in %s", files.size(), videoFilePath.ToStdString());
+        std::vector<wxFileName *> files = GetFilesInDirectory(directoryPath);
 
-        for (wxString &file : files) {
+        LOG_INFO("Found %d [Image/Video] Files in %s", files.size(), directoryPath);
+
+        for (wxFileName *file : files) {
             context->addVideo(file);
-            if (videoFilePath == file)
-            {
-                context->setCurrentIndex(index);
-            }
-            index++;
         }
-        updateMediaPlayer(context->getVideoByIndex(context->getCurrentIndex()));
+        context->reset(videoFilePath);
+
+        std::optional<wxString> currentVideoFilePath = context->getVideoByIndex(context->getCurrentIndex());
+        if(currentVideoFilePath.has_value()) {
+            updateMediaPlayer(currentVideoFilePath.value());
+        } else {
+            LOG_ERROR("Failed to get Current Video from Context for Directory %s", directoryPath);
+        }
+        
     }
 }
 
@@ -147,7 +152,7 @@ void VideoPanel::updateMediaPlayer(wxString videoFilePath) {
     volume = 1.0;
     mediaPlayer->SetVolume(volume);
     volumeSlider->SetValue(50);
-    LOG_INFO("Updated Media Player with %s", videoFilePath.ToStdString());
+    LOG_INFO("Updated Media Player with %s", videoFilePath);
 }
 
 void VideoPanel::playPauseHandler(wxCommandEvent &event) {
@@ -178,25 +183,26 @@ void VideoPanel::stopHandler(wxCommandEvent &event) {
 void VideoPanel::nextHandler(wxCommandEvent &event) {
 
     LOG_INFO("Next Video Handler Invoked");
-    int tempCurrentIndex = context->getCurrentIndex();
-
-    if (tempCurrentIndex != context->getListSize() - 1) {
-       updateMediaPlayer(context->getVideoByIndex(tempCurrentIndex + 1));
-       context->setCurrentIndex(tempCurrentIndex + 1);
-    } else {
-        LOG_INFO("End of Available Media List Reached");
+    if(context->next()) {
+        std::optional<wxString> currentVideoFilePath = context->getVideoByIndex(context->getCurrentIndex());
+        if(currentVideoFilePath.has_value()) {
+            updateMediaPlayer(currentVideoFilePath.value());
+        } else {
+            LOG_ERROR("Failed to get Current Video from Context");
+        }
     }
 }
 
 void VideoPanel::previousHandler(wxCommandEvent &event) {
 
     LOG_INFO("Previous Video Handler Invoked");
-    int tempCurrentIndex = context->getCurrentIndex();
-    if (tempCurrentIndex != 0) {
-        updateMediaPlayer(context->getVideoByIndex(tempCurrentIndex - 1));
-        context->setCurrentIndex(tempCurrentIndex - 1);
-    } else {
-        LOG_INFO("Starting of Available Media List Reached");
+    if(context->previous()) {
+        std::optional<wxString> currentVideoFilePath = context->getVideoByIndex(context->getCurrentIndex());
+        if(currentVideoFilePath.has_value()) {
+            updateMediaPlayer(currentVideoFilePath.value());
+        } else {
+            LOG_ERROR("Failed to get Current Video from Context");
+        }
     }
 }
 
@@ -207,21 +213,24 @@ void VideoPanel::volumeHandler(wxCommandEvent &event) {
     LOG_INFO("Volume Changed to %d%", int(volume*100.0));
 }
 
-std::vector<wxString> VideoPanel::GetFilesInDirectory(const wxString &dirPath)
+std::vector<wxFileName *> VideoPanel::GetFilesInDirectory(const wxString &dirPath)
 {
-    std::vector<wxString> files;
+    std::vector<wxFileName *> fileList;
     wxDir directory(dirPath);
-    if (directory.IsOpened())
-    {
+    if (directory.IsOpened()){
+
         wxString filename;
         bool hasFiles = directory.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
         while (hasFiles)
         {
-            files.push_back(dirPath + wxString("/") + filename);
+            wxFileName *file = new wxFileName(dirPath, filename, wxPATH_NATIVE);
+            if(context->supportedFormats.count(file->GetExt()) > 0){
+                fileList.push_back(file);
+            }
             hasFiles = directory.GetNext(&filename);
         }
     }
-    return files;
+    return fileList;
 }
 
 wxPanel *VideoPanel::getRootPanel()

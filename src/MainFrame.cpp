@@ -57,7 +57,7 @@ void MainFrame::LoadEmbeddedFont() {
     wxString fontPath = exeDir + "/Fonts/material_v1.ttf";
 
     if (!wxFileName::FileExists(fontPath)) {
-        LOG_ERROR("Font file missing at: %s", fontPath.ToStdString());
+        LOG_ERROR("Font file missing at: %s", fontPath);
         return;
     }
 
@@ -81,7 +81,7 @@ void MainFrame::LoadImageHandlers() {
     wxImage::AddHandler(new wxTIFFHandler);
     wxImage::AddHandler(new wxXPMHandler);
 
-    LOG_INFO("Image Handlers Loaded");
+    LOG_INFO("Image Handlers Loaded Successfully");
 }
 
 void MainFrame::LoadAppIcon() {
@@ -95,8 +95,8 @@ void MainFrame::LoadAppIcon() {
         appIcon.LoadFile(iconPath, wxBITMAP_TYPE_PNG);
         
         this->SetIcon(appIcon);
-        LOG_INFO("App icon loaded from: %s", iconPath.ToStdString());
+        LOG_INFO("App icon loaded from: %s", iconPath);
     } else {
-        LOG_ERROR("Could not find icon at: %s", iconPath.ToStdString());
+        LOG_ERROR("Could not find icon at: %s", iconPath);
     }
 }

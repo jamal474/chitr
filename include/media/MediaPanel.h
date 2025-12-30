@@ -9,11 +9,10 @@
 class MediaPanel {
 
 protected :
-
+    virtual std::vector<wxFileName *> GetFilesInDirectory(const wxString& dirPath) = 0;
     virtual void init() = 0;
     virtual void setSizers() = 0;
     virtual void setBindings() = 0;
-    virtual std::vector<wxString> GetFilesInDirectory(const wxString& dirPath) = 0;
 
     wxFrame                     *mainFrame;
     wxPanel                     *rootPanel;

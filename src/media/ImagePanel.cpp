@@ -101,7 +101,13 @@ void ImagePanel::uploadHandler(wxCommandEvent &event) {
 
     LOG_INFO("Image Upload Handler Invoked");
     wxFileDialog openFileDialog(rootPanel, "Upload Image", "", "",
-                                "(*.jpg; *.jpeg; *.png; *.gif; *.tiff; *.tif)|*.jpg;*.jpeg;*.png;*.gif;*.tiff;*.tif",
+                                "JPEG files (*.jpg;*.jpeg)|*.jpg;*.jpeg|"
+                                "PNG files (*.png)|*.png|"
+                                "GIF Files (*.gif)|*.gif|"
+                                "TIFF files (*.tiff;*.tif)|*.tiff;*.tif|"
+                                "PCX files (*.pcx)|*.pcx|"
+                                "PNM files (*.pnm)|*.pnm|"
+                                "XPM files (*.xpm)|*.xpm",
                                 wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
     if (openFileDialog.ShowModal() == wxID_OK) {
@@ -109,18 +115,21 @@ void ImagePanel::uploadHandler(wxCommandEvent &event) {
         wxFileName directory(imageFilePath);
         wxString directoryPath = directory.GetPath();
 
-        std::vector<wxString> files = GetFilesInDirectory(directoryPath);
-        int index = 0;
-        LOG_INFO("Found %d [Image/Video] Files in %s", files.size(), imageFilePath.ToStdString());
+        std::vector<wxFileName *> files = GetFilesInDirectory(directoryPath);
+    
+        LOG_INFO("Found %d [Image/Video] Files in %s", files.size(), directoryPath);
         
-        for (wxString &file : files){
-            context->addImage(file);
-            if (imageFilePath == file) {
-                context->setCurrentIndex(index);
-            }
-            index++;
+        for (wxFileName *file : files){
+            context->addImage(file);    
         }
-        updateImageViewer(context->getImageByIndex(context->getCurrentIndex()));         
+        context->reset(imageFilePath);
+
+        std::optional<wxString> currentImageFilePath = context->getImageByIndex(context->getCurrentIndex());
+        if(currentImageFilePath.has_value()) {
+            updateImageViewer(currentImageFilePath.value());
+        } else {
+            LOG_ERROR("Failed to get Current Image from Context for Directory %s", directoryPath);
+        }        
     }
 }
 
@@ -133,7 +142,7 @@ void ImagePanel::updateImageViewer(wxString imageFilePath) {
     visualPanel->Layout();
     rootPanel->Layout();
     imageViewer->Refresh();
-    LOG_INFO("Updated Media Player with %s", imageFilePath.ToStdString());
+    LOG_INFO("Updated Media Player with %s", imageFilePath);
 }
 
 void ImagePanel::slideshowOpenClose(wxCommandEvent &event) {
@@ -152,53 +161,65 @@ void ImagePanel::slideshowOpenClose(wxCommandEvent &event) {
 
 void ImagePanel::slideshowHandler(wxTimerEvent &event) {
 
-    if (context->getCurrentIndex() == context->getListSize() - 1) {
-        context->setCurrentIndex(-1);
+    if(!context->next()) {
+        if(!context->reset()){
+            LOG_ERROR("Could Not Reset Index to 0");
+            return;
+        }
     }
-    wxCommandEvent newEvent(wxEVT_BUTTON, slideShowButton->GetId());
-    nextHandler(newEvent);
+    std::optional<wxString> currentImageFilePath = context->getImageByIndex(context->getCurrentIndex());
+    if(currentImageFilePath.has_value()) {
+        updateImageViewer(currentImageFilePath.value());
+    } else {
+        LOG_ERROR("Failed to get Current Image from Context");
+    }
 }
 
 void ImagePanel::nextHandler(wxCommandEvent &event) {
 
     LOG_INFO("Next Video Handler Invoked");
-    int tempCurrentIndex = context->getCurrentIndex();
-
-    if (tempCurrentIndex < context->getListSize() - 1) {
-        updateImageViewer(context->getImageByIndex(tempCurrentIndex + 1));
-        context->setCurrentIndex(tempCurrentIndex + 1);
-    } else {
-        LOG_INFO("End of Available Media List Reached");
+    if(context->next()) {
+        std::optional<wxString> currentImageFilePath = context->getImageByIndex(context->getCurrentIndex());
+        if(currentImageFilePath.has_value()) {
+            updateImageViewer(currentImageFilePath.value());
+        } else {
+            LOG_ERROR("Failed to get Current Image from Context");
+        }
     }
 }
 
 void ImagePanel::previousHandler(wxCommandEvent &event) {
 
     LOG_INFO("Previous Image Handler Invoked");
-    int tempCurrentIndex = context->getCurrentIndex();
-
-    if (tempCurrentIndex != 0) {
-        updateImageViewer(context->getImageByIndex(tempCurrentIndex - 1));
-        context->setCurrentIndex(tempCurrentIndex - 1);
-    } else {
-        LOG_INFO("Starting of Available Media List Reached");
+    if(context->previous()) {
+        std::optional<wxString> currentImageFilePath = context->getImageByIndex(context->getCurrentIndex());
+        if(currentImageFilePath.has_value()) {
+            updateImageViewer(currentImageFilePath.value());
+        } else {
+            LOG_ERROR("Failed to get Current Image from Context");
+        }
     }
 }
 
-std::vector<wxString> ImagePanel::GetFilesInDirectory(const wxString &dirPath) {
+std::vector<wxFileName *> ImagePanel::GetFilesInDirectory(const wxString &dirPath) {
 
-    std::vector<wxString> files;
+    std::vector<wxFileName *> fileList;
     wxDir directory(dirPath);
+
     if (directory.IsOpened()) {
+
         wxString filename;
         bool hasFiles = directory.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
-
         while (hasFiles) {
-            files.push_back(dirPath + wxString("/") + filename);
+
+            wxFileName *file = new wxFileName(dirPath, filename, wxPATH_NATIVE);
+            if(context->supportedFormats.count(file->GetExt()) > 0){
+                fileList.push_back(file);
+            }
             hasFiles = directory.GetNext(&filename);
         }
     }
-    return files;
+    return fileList;
 }
 
 wxPanel *ImagePanel::getRootPanel()

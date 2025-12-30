@@ -1,16 +1,21 @@
 #pragma once
 #include <wx/wx.h>
+#include <wx/filename.h>
 #include <vector>
+#include <unordered_set>
 
 class MediaContext {
     
 protected:
-    std::vector<wxString>   mediaList;
-    int                     currentIndex;
+    virtual bool      setCurrentIndex(int newIndex) = 0;
+
+    std::vector<wxFileName *>       mediaList;
+    int                             currentIndex;
 
 public:
     virtual int       getListSize() = 0;
-    virtual void      setCurrentIndex(int newIndex) = 0;
     virtual int       getCurrentIndex() = 0;
-
+    virtual bool      next() = 0;
+    virtual bool      previous() = 0;
+    std::unordered_set<wxString>    supportedFormats;
 };

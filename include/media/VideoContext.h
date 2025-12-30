@@ -1,14 +1,21 @@
 #pragma once
+#include <optional>
 #include <wx/wx.h>
+#include <wx/filename.h>
 #include <media/MediaContext.h>
 
 class VideoContext : public MediaContext {
 
+protected:
+    bool setCurrentIndex(int newIndex) override;
+
 public:
     VideoContext();
-    int       getListSize() override;
-    void      setCurrentIndex(int newIndex) override;
-    int       getCurrentIndex() override;
-    void      addVideo(wxString );
-    wxString  getVideoByIndex(int index);
+    std::optional<wxString> getVideoByIndex(int index);
+    int     getListSize() override;
+    int     getCurrentIndex() override;
+    bool    next() override;
+    bool    previous() override;
+    bool    reset(wxString);
+    void    addVideo(wxFileName *);
 };
