@@ -15,6 +15,7 @@
 #include <wx/file.h>
 #include <wx/filedlg.h>
 #include <wx/filefn.h>
+#include <wx/accel.h>
 
 VideoPanel::VideoPanel(wxFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Resource> resourceAsset) {
     
@@ -95,13 +96,11 @@ void VideoPanel::setSizers() {
     visualPanel->SetSizer(visualSizer);
     visualSizer->SetSizeHints(mainFrame);
 
-    
     rootSizer->Add(visualPanel, 2, wxEXPAND | wxALL, 0);
     rootSizer->Add(controlPanel, 0, wxEXPAND | wxALL, 0);
     rootPanel->SetSizer(rootSizer);
     rootSizer->SetSizeHints(mainFrame);
 
-    
     rootSizer->Layout();
 
     LOG_INFO("VideoPanel Sizer Configuration Completed");
@@ -118,6 +117,35 @@ void VideoPanel::setBindings() {
     volumeSlider->Bind(wxEVT_LEFT_DOWN, &VideoPanel::volumeHandler, this);
     volumeSlider->Bind(wxEVT_MOTION, &VideoPanel::volumeHandler, this);
     volumeButton->Bind(wxEVT_BUTTON, &VideoPanel::muteHandler, this);
+    
+    std::vector<wxAcceleratorEntry> acceleratorEntry = getAcceleratorEntries();
+    wxAcceleratorTable acceleratorTable(acceleratorEntry.size(), acceleratorEntry.data());
+    rootPanel->SetAcceleratorTable(acceleratorTable);
+    rootPanel->Bind(wxEVT_MENU, &VideoPanel::alphaPressHandler, this, ID_OFFSET_ALPHA, ID_OFFSET_ALPHA + 25);
+    rootPanel->Bind(wxEVT_MENU, &VideoPanel::numPressHandler, this, ID_OFFSET_NUM, ID_OFFSET_NUM + 9);
+    rootPanel->Bind(wxEVT_MENU, &VideoPanel::arrowPressHandler, this, ID_ARROW_UP);
+    rootPanel->Bind(wxEVT_MENU, &VideoPanel::arrowPressHandler, this, ID_ARROW_DOWN);
+    rootPanel->Bind(wxEVT_MENU, &VideoPanel::arrowPressHandler, this, ID_ARROW_LEFT);
+    rootPanel->Bind(wxEVT_MENU, &VideoPanel::arrowPressHandler, this, ID_ARROW_RIGHT);
+}
+
+std::vector<wxAcceleratorEntry> VideoPanel::getAcceleratorEntries() {
+
+    std::vector<wxAcceleratorEntry> entries;
+    entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, 'M', ID_OFFSET_ALPHA + int('M' - 'A')));
+    entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, 'O', ID_OFFSET_ALPHA + int('O' - 'A')));
+
+    for (int i = 0; i <= 9; ++i) {
+        int key = '0' + i; 
+        int cmdId = ID_OFFSET_NUM + i;
+        entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, key, cmdId));
+    }
+    entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_UP,   ID_ARROW_UP));
+    entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_DOWN, ID_ARROW_DOWN));
+    entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_LEFT, ID_ARROW_LEFT));
+    entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_RIGHT, ID_ARROW_RIGHT));
+
+    return entries;
 }
 
 void VideoPanel::setCursors() {
@@ -290,4 +318,50 @@ void VideoPanel::muteHandler(wxCommandEvent &event) {
     }
     LOG_INFO("Mute Handler Invoked");
     
-} 
+}
+
+void VideoPanel::alphaPressHandler(wxCommandEvent& event) {
+
+    char alphabetPressed = 'A' + (event.GetId() - ID_OFFSET_ALPHA);
+    switch (alphabetPressed) {
+        case 'M': {
+            wxCommandEvent newEvent(wxEVT_BUTTON, event.GetId());
+            muteHandler(newEvent);
+            LOG_INFO("Alphabet Key Event Raised : M [Mute]");
+            break;
+        }
+        default: {
+            LOG_INFO("Alphabet Key Event Raised : %c [Not Handled]", alphabetPressed);
+            break;
+        }
+    }
+}
+
+void VideoPanel::numPressHandler(wxCommandEvent& event) {
+
+    int numberPressed = event.GetId() - ID_OFFSET_NUM;
+    LOG_INFO("Number Key Event Raised : %d", numberPressed);
+}
+
+void VideoPanel::arrowPressHandler(wxCommandEvent& event) {
+    
+    int arrowId = event.GetId();
+    switch (arrowId) {
+        case ID_ARROW_UP: {
+
+            break;
+        }
+        case ID_ARROW_DOWN: {
+
+            break;
+        }
+        case ID_ARROW_LEFT: {
+
+            break;
+        }
+        case ID_ARROW_RIGHT: {
+
+            break;
+        }
+    }
+}
