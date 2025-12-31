@@ -13,6 +13,8 @@ protected :
     virtual void init() = 0;
     virtual void setSizers() = 0;
     virtual void setBindings() = 0;
+    virtual void setCursors() = 0;
+    virtual void setToolTips() = 0;
 
     wxFrame                     *mainFrame;
     wxPanel                     *rootPanel;

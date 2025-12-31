@@ -18,6 +18,7 @@ private :
     wxBitmap        stopIcon;
     wxBitmap        pauseIcon;
     wxBitmap        volumeIcon;
+    wxBitmap        muteIcon;
     wxBitmap        imageIcon;
     wxBitmap        musicIcon;
 
@@ -35,6 +36,7 @@ public:
     wxBitmap getStopIcon();
     wxBitmap getPauseIcon();
     wxBitmap getVolumeIcon();
+    wxBitmap getMuteIcon();
     wxBitmap getImageIcon();
     wxBitmap getMusicIcon();
 

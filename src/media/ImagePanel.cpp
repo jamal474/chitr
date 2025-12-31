@@ -75,6 +75,7 @@ void ImagePanel::setSizers() {
 
     controlPanel->SetSizer(controlSizer);
     controlSizer->SetSizeHints(mainFrame);
+
     visualPanel->SetSizer(visualSizer);
     visualSizer->SetSizeHints(mainFrame);
 
@@ -95,6 +96,14 @@ void ImagePanel::setBindings() {
     previousButton->Bind(wxEVT_BUTTON, &ImagePanel::previousHandler, this);
     slideShowTimer.Bind(wxEVT_TIMER, &ImagePanel::slideshowHandler, this);
     slideShowButton->Bind(wxEVT_BUTTON, &ImagePanel::slideshowOpenClose, this);
+}
+
+void ImagePanel::setCursors() {
+
+}
+
+void ImagePanel::setToolTips() {
+    
 }
 
 void ImagePanel::uploadHandler(wxCommandEvent &event) {

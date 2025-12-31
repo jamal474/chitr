@@ -6,6 +6,10 @@
 
 class VideoContext : public MediaContext {
 
+private:
+    bool            isPlaying;
+    int             volume;
+
 protected:
     bool setCurrentIndex(int newIndex) override;
 
@@ -18,4 +22,8 @@ public:
     bool    previous() override;
     bool    reset(wxString);
     void    addVideo(wxFileName *);
+    bool    getIsPlaying();
+    void    setIsPlaying(bool);
+    int     getVolume();
+    void    setVolume(int);
 };

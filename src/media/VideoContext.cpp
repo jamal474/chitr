@@ -6,6 +6,8 @@
 VideoContext::VideoContext() {
     currentIndex = 0;
     supportedFormats.insert({ _T("mp3"), _T("mp4")});
+    volume = 100;
+    isPlaying = false;
 }
 
 int VideoContext::getListSize() {
@@ -72,4 +74,27 @@ bool VideoContext::reset(wxString videoFilePath) {
         }
     }
     return false;
+}
+
+bool VideoContext::getIsPlaying() {
+    return isPlaying;
+}
+
+void VideoContext::setIsPlaying(bool playStatus) {
+    if (isPlaying && !playStatus){
+        isPlaying = false;
+        LOG_INFO("Playback Stopped");
+    } else if(!isPlaying && playStatus) {
+        isPlaying = true;
+        LOG_INFO("playback Started");
+    }
+}
+
+int VideoContext::getVolume() {
+    return volume;
+}
+void VideoContext::setVolume(int newVolume) {
+    if(newVolume >= 0 && newVolume <= 100) {
+        volume = newVolume;
+    }
 }

@@ -15,6 +15,8 @@ protected:
     virtual void init() override;
     virtual void setSizers() override;
     virtual void setBindings() override;
+    virtual void setCursors() override;
+    virtual void setToolTips() override;
 
 private:
     void uploadHandler(wxCommandEvent &event);
@@ -23,18 +25,17 @@ private:
     void stopHandler(wxCommandEvent &event);
     void nextHandler(wxCommandEvent &event);
     void previousHandler(wxCommandEvent &event);
-    void volumeHandler(wxCommandEvent &event);
+    void volumeHandler(wxMouseEvent& event);
+    void muteHandler(wxCommandEvent &event);
 
     wxMediaCtrl     *mediaPlayer;
-    wxSlider        *volumeSlider;
+    wxGauge         *volumeSlider;
     wxButton        *uploadButton;
     wxButton        *stopButton;
     wxButton        *nextButton;
     wxButton        *previousButton;
     wxButton        *playPauseButton;
-    wxStaticBitmap  *volumeIcon;
-    bool            isPlaying;
-    double          volume;
+    wxButton        *volumeButton;
     VideoContext    *context;
 
 public:

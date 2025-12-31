@@ -25,6 +25,7 @@ Resource::Resource()
     stopIcon        = GetIconAsBitmap(ICON_MD_STOP, iconSize, *wxWHITE);
     pauseIcon       = GetIconAsBitmap(ICON_MD_PAUSE, iconSize, *wxWHITE);
     volumeIcon      = GetIconAsBitmap(ICON_MD_VOLUME_UP, iconSize, *wxWHITE);
+    muteIcon        = GetIconAsBitmap(ICON_MD_VOLUME_MUTE, iconSize, *wxWHITE);
     imageIcon       = GetIconAsBitmap(ICON_MD_IMAGE, iconSize, *wxWHITE);
     musicIcon       = GetIconAsBitmap(ICON_MD_LIBRARY_MUSIC, iconSize, *wxWHITE);
 }
@@ -123,6 +124,11 @@ wxBitmap Resource::getPauseIcon()
 wxBitmap Resource::getVolumeIcon()
 {
     return volumeIcon;
+}
+
+wxBitmap Resource::getMuteIcon()
+{
+    return muteIcon;
 }
 
 wxBitmap Resource::getImageIcon()

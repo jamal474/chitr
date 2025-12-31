@@ -16,6 +16,8 @@ protected:
     virtual void init() override;
     virtual void setSizers() override;
     virtual void setBindings() override;
+    virtual void setCursors() override;
+    virtual void setToolTips() override;
 
 private:
     void uploadHandler(wxCommandEvent &event);

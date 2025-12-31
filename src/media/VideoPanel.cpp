@@ -8,11 +8,13 @@
 #include <wx/filename.h>
 #include <wx/dir.h>
 #include <wx/wx.h>
+#include <wx/mediactrl.h>
 #include <wx/notebook.h>
 #include <wx/event.h>
 #include <wx/mediactrl.h>
 #include <wx/file.h>
 #include <wx/filedlg.h>
+#include <wx/filefn.h>
 
 VideoPanel::VideoPanel(wxFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Resource> resourceAsset) {
     
@@ -32,6 +34,11 @@ VideoPanel::VideoPanel(wxFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Re
     } catch(const std::exception &exc) {
         LOG_ERROR("Error registering Callbacks for Video Panel | %s", exc.what());
     }
+
+    setCursors();
+    setToolTips();
+    volumeSlider->SetValue(100);
+    controlPanel->SetFocus();
 }
 
 void VideoPanel::init() {
@@ -49,10 +56,8 @@ void VideoPanel::init() {
     previousButton      = new wxButton(controlPanel, wxID_ANY, "Previous Video", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
     stopButton          = new wxButton(controlPanel, wxID_ANY, "Stop", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
     nextButton          = new wxButton(controlPanel, wxID_ANY, "Next Video", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
-    volumeSlider        = new wxSlider(controlPanel, wxID_ANY, 100, 0, 100,wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
-    volumeIcon          = new wxStaticBitmap(controlPanel, wxID_ANY, wxBitmap());
-    isPlaying           = (false);
-    volume              = (1.0);
+    volumeSlider        = new wxGauge(controlPanel, wxID_ANY, 100, wxDefaultPosition, wxSize(70,2), wxGA_HORIZONTAL | wxGA_SMOOTH);
+    volumeButton        = new wxButton(controlPanel, wxID_ANY, "Volume Video", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
 
     LOG_INFO("VideoPanel Initialization completed");
 }
@@ -62,7 +67,7 @@ void VideoPanel::setSizers() {
     visualPanel->SetBackgroundColour(*wxBLACK);
     controlPanel->SetBackgroundColour(assets->getPrimaryColour());
 
-    volumeIcon->SetBitmap(assets->getVolumeIcon());
+    volumeButton->SetBitmap(assets->getVolumeIcon());
     uploadButton->SetBitmap(assets->getUploadIcon());
     playPauseButton->SetBitmap(assets->getPlayIcon());
     previousButton->SetBitmap(assets->getPreviousIcon());
@@ -81,11 +86,10 @@ void VideoPanel::setSizers() {
     controlSizer->Add(stopButton, 0, wxCENTER | wxALL, 5);
     controlSizer->Add(nextButton, 0, wxCENTER | wxALL, 5);
     controlSizer->AddStretchSpacer(1);
-    controlSizer->Add(volumeIcon, 0, wxEXPAND | wxALL, 5);
+    controlSizer->Add(volumeButton, 0, wxEXPAND | wxALL, 5);
     controlSizer->Add(volumeSlider, 0, wxEXPAND | wxALL, 5);
-
+    
     controlPanel->SetSizer(controlSizer);
-    // SetSizeHints requiers object of RootFrame/wxFrame ,need to check its use
     controlSizer->SetSizeHints(mainFrame);
 
     visualPanel->SetSizer(visualSizer);
@@ -110,7 +114,32 @@ void VideoPanel::setBindings() {
     stopButton->Bind(wxEVT_BUTTON, &VideoPanel::stopHandler, this);
     nextButton->Bind(wxEVT_BUTTON, &VideoPanel::nextHandler, this);
     previousButton->Bind(wxEVT_BUTTON, &VideoPanel::previousHandler, this);
-    volumeSlider->Bind(wxEVT_SLIDER, &VideoPanel::volumeHandler, this);
+    mediaPlayer->Bind(wxEVT_MEDIA_LOADED, &VideoPanel::playPauseHandler, this);
+    volumeSlider->Bind(wxEVT_LEFT_DOWN, &VideoPanel::volumeHandler, this);
+    volumeSlider->Bind(wxEVT_MOTION, &VideoPanel::volumeHandler, this);
+    volumeButton->Bind(wxEVT_BUTTON, &VideoPanel::muteHandler, this);
+}
+
+void VideoPanel::setCursors() {
+
+    uploadButton->SetCursor(wxCursor(wxCURSOR_HAND));
+    playPauseButton->SetCursor(wxCursor(wxCURSOR_HAND));
+    stopButton->SetCursor(wxCursor(wxCURSOR_HAND));
+    nextButton->SetCursor(wxCursor(wxCURSOR_HAND));
+    previousButton->SetCursor(wxCursor(wxCURSOR_HAND));
+    volumeButton->SetCursor(wxCursor(wxCURSOR_HAND));
+    volumeSlider->SetCursor(wxCursor(wxCURSOR_HAND));
+}
+
+void VideoPanel::setToolTips() {
+
+    uploadButton->SetToolTip("Upload");
+    playPauseButton->SetToolTip("Play");
+    stopButton->SetToolTip("Stop");
+    nextButton->SetToolTip("Next");
+    previousButton->SetToolTip("Previous");
+    volumeButton->SetToolTip("Mute");
+    volumeSlider->SetToolTip(std::to_string(context->getVolume()) + "%");
 }
 
 void VideoPanel::uploadHandler(wxCommandEvent &event) {
@@ -147,36 +176,31 @@ void VideoPanel::uploadHandler(wxCommandEvent &event) {
 
 void VideoPanel::updateMediaPlayer(wxString videoFilePath) {
 
+    context->setIsPlaying(false);
     mediaPlayer->Load(videoFilePath);
-    isPlaying = false;
-    volume = 1.0;
-    mediaPlayer->SetVolume(volume);
-    volumeSlider->SetValue(50);
+    LOG_INFO("Time in Milisecond : %d",mediaPlayer->Length());
     LOG_INFO("Updated Media Player with %s", videoFilePath);
 }
 
 void VideoPanel::playPauseHandler(wxCommandEvent &event) {
-
-    if (mediaPlayer->Tell() == 0 || !isPlaying) {
+    LOG_INFO("Time in Milisecond : %d",(long long)mediaPlayer->Length());
+    if (mediaPlayer->Tell() == 0 || !context->getIsPlaying()) {
         mediaPlayer->Play();
-        isPlaying = true;
+        context->setIsPlaying(true);
         playPauseButton->SetBitmap(assets->getPauseIcon());
-        LOG_INFO("Playback Started");
     } else {
         mediaPlayer->Pause();
-        isPlaying = false;
+        context->setIsPlaying(false);
         playPauseButton->SetBitmap(assets->getPlayIcon());
-        LOG_INFO("Playback Paused");
     }
 }
 
 void VideoPanel::stopHandler(wxCommandEvent &event) {
 
+    context->setIsPlaying(false);
     mediaPlayer->Stop();
-    isPlaying = false;
+
     playPauseButton->SetBitmap(assets->getPlayIcon());
-    volumeSlider->SetValue(100);
-    mediaPlayer->SetVolume(1.0);
     LOG_INFO("Playback Stopped");
 }
 
@@ -206,11 +230,25 @@ void VideoPanel::previousHandler(wxCommandEvent &event) {
     }
 }
 
-void VideoPanel::volumeHandler(wxCommandEvent &event) {
+void VideoPanel::volumeHandler(wxMouseEvent& event) {
 
-    volume = volumeSlider->GetValue() / 100.0;
-    mediaPlayer->SetVolume(volume);
-    LOG_INFO("Volume Changed to %d%", int(volume*100.0));
+    if (event.LeftIsDown()) {
+        int width = volumeSlider->GetSize().GetWidth();
+        int x = event.GetX();
+        int value = (x * volumeSlider->GetRange()) / width;
+        
+        if (value < 0) value = 0;
+        if (value > volumeSlider->GetRange()) value = volumeSlider->GetRange();
+        
+        if (value == 0) {
+            wxCommandEvent newEvent(wxEVT_BUTTON, event.GetId());
+            muteHandler(newEvent);
+        }
+        
+        context->setVolume(value);
+        volumeSlider->SetValue(context->getVolume());
+        mediaPlayer->SetVolume(double(context->getVolume())/100.0);  
+    }
 }
 
 std::vector<wxFileName *> VideoPanel::GetFilesInDirectory(const wxString &dirPath)
@@ -237,3 +275,19 @@ wxPanel *VideoPanel::getRootPanel()
 {
     return rootPanel;
 }
+
+void VideoPanel::muteHandler(wxCommandEvent &event) {
+
+    bool isSliderVisible = volumeSlider->IsShown();
+    if (isSliderVisible) {
+        volumeButton->SetBitmap(assets->getMuteIcon());
+        volumeSlider->Show(false);
+        mediaPlayer->SetVolume(0.0);  
+    } else {
+        volumeButton->SetBitmap(assets->getVolumeIcon());
+        volumeSlider->Show(true);
+        mediaPlayer->SetVolume(double(context->getVolume())/100.0);  
+    }
+    LOG_INFO("Mute Handler Invoked");
+    
+} 
