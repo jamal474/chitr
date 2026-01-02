@@ -6,11 +6,15 @@
 
 class ImageContext : public MediaContext {
 
+private:
+    bool slideShowFlag;
+
 protected:
     bool setCurrentIndex(int newIndex) override;
 
 public:
     ImageContext();
+    ~ImageContext();
     std::optional<wxString> getImageByIndex(int index);
     int     getListSize() override;
     int     getCurrentIndex() override;
@@ -19,5 +23,7 @@ public:
     bool    reset();
     bool    reset(wxString);
     void    addImage(wxFileName *);
+    bool    getSlideShowFlag();
+    void    setSlideShowFlag(bool );
     
 };

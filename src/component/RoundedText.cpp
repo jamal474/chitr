@@ -12,7 +12,7 @@ RoundedText::RoundedText(wxWindow* parent, wxWindowID id, const wxString& text,
     textLabel->SetForegroundColour(fgColor);
     textLabel->SetBackgroundColour(bgColor);
 
-    wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+    sizer = new wxBoxSizer(wxHORIZONTAL);
     sizer->Add(textLabel, 1, wxALIGN_CENTER | wxALL, 12);
     SetSizer(sizer);
 }

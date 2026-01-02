@@ -25,6 +25,7 @@ VideoPanel::VideoPanel(wxFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Re
         assets      = (resourceAsset);
         context     = new VideoContext();
         mainFrame   = mFrame;
+
         init();
         setSizers();
     } catch(const std::exception &exc) {
@@ -262,7 +263,11 @@ void VideoPanel::mediaEndedHandler(wxCommandEvent &event) {
 void VideoPanel::playPauseHandler(wxCommandEvent &event) {
 
     if (!context->getIsPlaying()) {
-        mediaPlayer->Play();
+        if (mediaPlayer->Play()) {
+            LOG_INFO("Playing Media");
+        } else {
+            
+        } 
         context->setIsPlaying(true);
         playbackTimer->Start(30);
         playPauseButton->SetBitmap(assets->getPauseIcon());

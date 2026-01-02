@@ -3,6 +3,7 @@
 #include <wx/graphics.h>
 
 class RoundedText : public wxPanel {
+    
 public:
     RoundedText(wxWindow* parent, wxWindowID id, const wxString& text, 
                 const wxColour& bgColor, const wxColour& fgColor, 
@@ -19,7 +20,8 @@ protected:
     void OnPaint(wxPaintEvent& event);
 
 private:
-    wxStaticText* textLabel;
-    wxColour backColour;
-    double cornerRadius;
+    wxStaticText    *textLabel;
+    wxBoxSizer      *sizer;
+    wxColour        backColour;
+    double          cornerRadius;
 };

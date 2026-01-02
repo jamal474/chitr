@@ -4,10 +4,22 @@
 #include <optional>
 
 VideoContext::VideoContext() {
+
+    LOG_INFO("Creating Video Context");
     currentIndex = 0;
     supportedFormats.insert({ _T("mp3"), _T("mp4")});
     volume = 100;
     isPlaying = false;
+}
+
+VideoContext::~VideoContext() {
+
+    LOG_INFO("Cleaning Video Context");
+    for(int i = 0 ; i < getListSize() ; i++) {
+        delete mediaList[i];
+        mediaList[i] = nullptr;
+    }
+    mediaList.clear();
 }
 
 int VideoContext::getListSize() {

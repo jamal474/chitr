@@ -17,6 +17,8 @@ protected:
 
 public:
     VideoContext();
+    ~VideoContext();
+    
     std::optional<wxString> getVideoByIndex(int index);
     long long       getTotalPlaybackTimeInMiliSecond();
     std::string     getTotalPlaybackTimeString();

@@ -4,12 +4,25 @@
 #include <optional>
 
 ImageContext::ImageContext() {
+
+    LOG_INFO("Creating Image Context");
     currentIndex = 0;
+    slideShowFlag = false;
     supportedFormats.insert({ _T("jpg"), _T("jpeg"),
                             _T("png"), _T("gif"),
                             _T("pcx"), _T("pnm"),
                             _T("tiff"), _T("tif"),
                             _T("xpm")});
+}
+
+ImageContext::~ImageContext() {
+
+    LOG_INFO("Cleaning Image Context");
+    for(int i = 0 ; i < getListSize() ; i++) {
+        delete mediaList[i];
+        mediaList[i] = nullptr;
+    }
+    mediaList.clear();
 }
 
 int ImageContext::getListSize() {
@@ -76,4 +89,12 @@ bool ImageContext::reset(wxString imageFilePath) {
         }
     }
     return false;
+}
+
+bool ImageContext::getSlideShowFlag() {
+    return slideShowFlag;
+}
+
+void ImageContext::setSlideShowFlag(bool flag) {
+    slideShowFlag = flag;
 }

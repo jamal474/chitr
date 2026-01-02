@@ -18,6 +18,7 @@ ImagePanel::ImagePanel(wxFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Re
         assets      = (resourceAsset);
         context     = new ImageContext();
         mainFrame   = mFrame;
+
         init();
         setSizers();
     } catch(const std::exception &exc) {
@@ -28,6 +29,22 @@ ImagePanel::ImagePanel(wxFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Re
         setBindings();
     } catch(const std::exception &exc) {
     LOG_ERROR("Error registering Callbacks for Image Panel | %s", exc.what());
+    }
+}
+
+ImagePanel::~ImagePanel() {
+    
+    if (slideShowTimer) {
+        slideShowTimer->Stop(); 
+        slideShowTimer->Unbind(wxEVT_TIMER, &ImagePanel::slideshowHandler, this);
+        
+        delete slideShowTimer;
+        slideShowTimer = nullptr;
+    }
+
+    if (context) {
+        delete context;
+        context = nullptr;
     }
 }
 
@@ -45,10 +62,8 @@ void ImagePanel::init() {
     nextButton          = new wxButton(controlPanel, wxID_ANY, "Next Image", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
     previousButton      = new wxButton(controlPanel, wxID_ANY, "Prev Image", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
     slideShowButton     = new wxButton(controlPanel, wxID_ANY, "Slideshow", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
-
-    slideShowFlag       = false;
-    //slideshowflag, slideshowtimer init left
-
+    slideShowTimer      = new wxTimer();
+    
     LOG_INFO("ImagePanel Initialization completed");
 }
 
@@ -91,19 +106,52 @@ void ImagePanel::setSizers() {
 
 void ImagePanel::setBindings() {
     
+    rootPanel->Bind(wxEVT_DESTROY, &ImagePanel::OnWindowDestroy, this);
     uploadButton->Bind(wxEVT_BUTTON, &ImagePanel::uploadHandler, this);
     nextButton->Bind(wxEVT_BUTTON, &ImagePanel::nextHandler, this);
     previousButton->Bind(wxEVT_BUTTON, &ImagePanel::previousHandler, this);
-    slideShowTimer.Bind(wxEVT_TIMER, &ImagePanel::slideshowHandler, this);
+    slideShowTimer->Bind(wxEVT_TIMER, &ImagePanel::slideshowHandler, this);
     slideShowButton->Bind(wxEVT_BUTTON, &ImagePanel::slideshowOpenClose, this);
+
+    std::vector<wxAcceleratorEntry> acceleratorEntry = getAcceleratorEntries();
+    wxAcceleratorTable acceleratorTable(acceleratorEntry.size(), acceleratorEntry.data());
+    rootPanel->SetAcceleratorTable(acceleratorTable);
+    rootPanel->Bind(wxEVT_MENU, &ImagePanel::alphaPressHandler, this, ID_OFFSET_ALPHA, ID_OFFSET_ALPHA + 25);
+    rootPanel->Bind(wxEVT_MENU, &ImagePanel::numPressHandler, this, ID_OFFSET_NUM, ID_OFFSET_NUM + 9);
+    rootPanel->Bind(wxEVT_MENU, &ImagePanel::keyPressHandler, this, ID_ARROW_UP);
+    rootPanel->Bind(wxEVT_MENU, &ImagePanel::keyPressHandler, this, ID_ARROW_DOWN);
+    rootPanel->Bind(wxEVT_MENU, &ImagePanel::keyPressHandler, this, ID_ARROW_LEFT);
+    rootPanel->Bind(wxEVT_MENU, &ImagePanel::keyPressHandler, this, ID_ARROW_RIGHT);
+    rootPanel->Bind(wxEVT_MENU, &ImagePanel::keyPressHandler, this, ID_SPACE);
+    rootPanel->Bind(wxEVT_MENU, &ImagePanel::keyPressHandler, this, ID_ENTER);
+}
+
+std::vector<wxAcceleratorEntry> ImagePanel::getAcceleratorEntries() {
+
+    std::vector<wxAcceleratorEntry> entries;
+    entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_UP,   ID_ARROW_UP));
+    entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_DOWN, ID_ARROW_DOWN));
+    entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_LEFT, ID_ARROW_LEFT));
+    entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_RIGHT, ID_ARROW_RIGHT));
+    entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_SPACE, ID_SPACE));
+
+    return entries;
 }
 
 void ImagePanel::setCursors() {
 
+    uploadButton->SetCursor(wxCursor(wxCURSOR_HAND));
+    nextButton->SetCursor(wxCursor(wxCURSOR_HAND));
+    previousButton->SetCursor(wxCursor(wxCURSOR_HAND));
+    slideShowButton->SetCursor(wxCursor(wxCURSOR_HAND));
 }
 
 void ImagePanel::setToolTips() {
-    
+
+    uploadButton->SetToolTip("Upload");
+    nextButton->SetToolTip("Next");
+    previousButton->SetToolTip("Previous");
+    slideShowButton->SetToolTip("Slideshow");
 }
 
 void ImagePanel::uploadHandler(wxCommandEvent &event) {
@@ -156,14 +204,16 @@ void ImagePanel::updateImageViewer(wxString imageFilePath) {
 
 void ImagePanel::slideshowOpenClose(wxCommandEvent &event) {
 
-    slideShowFlag = slideShowFlag ? false : true;
-    if (slideShowFlag) {
+    bool slideShowOpen = context->getSlideShowFlag();
+    if (!slideShowOpen) {
         LOG_INFO("Slideshow Start");
-        slideShowTimer.Start(2000);
+        context->setSlideShowFlag(true);
+        slideShowTimer->Start(2000);
         slideShowButton->SetBitmap(assets->getCloseIcon());
     } else {
         LOG_INFO("Slideshow End");
-        slideShowTimer.Stop();
+        context->setSlideShowFlag(false);
+        slideShowTimer->Stop();
         slideShowButton->SetBitmap(assets->getSlideshowIcon());
     }
 }
@@ -234,4 +284,63 @@ std::vector<wxFileName *> ImagePanel::GetFilesInDirectory(const wxString &dirPat
 wxPanel *ImagePanel::getRootPanel()
 {
     return rootPanel;
+}
+
+void ImagePanel::alphaPressHandler(wxCommandEvent& event) {
+
+    char alphabetPressed = 'A' + (event.GetId() - ID_OFFSET_ALPHA);
+    switch (alphabetPressed) {
+        default: {
+            LOG_INFO("Alphabet Key Event Raised : %c [Not Handled]", alphabetPressed);
+            break;
+        }
+    }
+}
+
+void ImagePanel::numPressHandler(wxCommandEvent& event) {
+
+    int numberPressed = event.GetId() - ID_OFFSET_NUM;
+    LOG_INFO("Number Key Event Raised : %d", numberPressed);
+}
+
+void ImagePanel::keyPressHandler(wxCommandEvent& event) {
+    
+    int arrowId = event.GetId();
+    switch (arrowId) {
+        case ID_ARROW_UP: {
+
+            break;
+        }
+        case ID_ARROW_DOWN: {
+
+            break;
+        }
+        case ID_ARROW_LEFT: {
+
+            break;
+        }
+        case ID_ARROW_RIGHT: {
+
+            break;
+        }
+        case ID_SPACE: {
+            wxCommandEvent newEvent(wxEVT_BUTTON, event.GetId());
+            slideshowOpenClose(newEvent);
+            break;
+        }
+    }
+}
+
+void ImagePanel::OnWindowDestroy(wxWindowDestroyEvent& event) {
+
+    if (event.GetEventObject() == rootPanel) {
+        LOG_INFO("RootPanel is being destroyed - cleaning up UI references");
+
+        if (slideShowTimer) {
+            slideShowTimer->Stop();
+        }
+
+        rootPanel->Unbind(wxEVT_DESTROY, &ImagePanel::OnWindowDestroy, this);
+    }
+    event.Skip();
 }
