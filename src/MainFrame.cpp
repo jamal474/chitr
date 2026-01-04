@@ -9,6 +9,7 @@
 #include <wx/filename.h>
 #include <wx/wx.h>
 #include <wx/icon.h>
+#include <vector>
 
 MainFrame::MainFrame(const wxString &title) : wxFrame(NULL, wxID_ANY, title)
 {
@@ -23,10 +24,11 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(NULL, wxID_ANY, title)
 
     MediaPanel      *imagePanel = new ImagePanel(this, notebook, assets);
     MediaPanel      *videoPanel = new VideoPanel(this, notebook, assets);
+
+    pages.push_back(imagePanel);
+    pages.push_back(videoPanel);
     
     mainSizer       = new wxBoxSizer(wxVERTICAL);
-
-    // notebook->SetForegroundColour(*wxBLACK);
     
     notebook->AddPage(imagePanel->getRootPanel(), "Image Player");
     notebook->AddPage(videoPanel->getRootPanel(), "Video Player");
@@ -35,10 +37,9 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(NULL, wxID_ANY, title)
     SetSizerAndFit(mainSizer);
 
 
-    // wxFrame::CreateStatusBar(4,wxSTB_DEFAULT_STYLE,wxID_ANY,"Status");
-    // wxFrame::SetStatusText("IMG_0012.png", 0);
-    // wxFrame::SetStatusText("25 MB", 1);
-    // wxFrame::SetStatusText("12-12-2002", 2);
+    statusBar = CreateStatusBar(3,wxSTB_DEFAULT_STYLE,wxID_ANY,"Status");
+
+    Bind(wxEVT_NOTEBOOK_PAGE_CHANGED, &MainFrame::notebookChangeHandler, this);
 
     // wxToolBar *toolBar = wxFrame::CreateToolBar(wxTB_BOTTOM, -1, "Folders");
     // wxButton *fileButton = new wxButton(this, wxID_ANY, "Files", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
@@ -96,4 +97,19 @@ void MainFrame::LoadAppIcon() {
     } else {
         LOG_ERROR("Could not find icon at: %s", iconPath);
     }
+}
+
+void MainFrame::setStatusBarText(const std::vector<wxString> &statusBarData) {
+
+    for (int index = 0; index < statusBar->	GetFieldsCount(); index++)
+        SetStatusText(statusBarData[index], index);
+}
+
+void MainFrame::notebookChangeHandler(wxBookCtrlEvent& event) {
+
+    int pageId = event.GetSelection();
+    const std::vector<wxString> statusBarData = pages[pageId]->getStatusBarData();
+
+    for (int index = 0; index < statusBar->	GetFieldsCount(); index++)
+        SetStatusText(statusBarData[index], index);
 }

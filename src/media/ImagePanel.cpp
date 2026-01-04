@@ -1,6 +1,8 @@
 #include "media/ImagePanel.h"
 #include "media/ImageContext.h"
 #include "chitr/ChitrLogger.h"
+#include "chitr/CFile.h"
+#include "chitr/MainFrame.h"
 #include <memory>
 #include <vector>
 #include <chrono>
@@ -11,7 +13,7 @@
 #include <wx/event.h>
 #include <wx/file.h>
 
-ImagePanel::ImagePanel(wxFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Resource> resourceAsset) {
+ImagePanel::ImagePanel(MainFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Resource> resourceAsset) {
     
     try {
         rootPanel   = new wxPanel(notebook);
@@ -172,16 +174,16 @@ void ImagePanel::uploadHandler(wxCommandEvent &event) {
         wxFileName directory(imageFilePath);
         wxString directoryPath = directory.GetPath();
 
-        std::vector<wxFileName *> files = GetFilesInDirectory(directoryPath);
+        std::vector<CFile *> files = GetFilesInDirectory(directoryPath);
     
         LOG_INFO("Found %d [Image/Video] Files in %s", files.size(), directoryPath);
         
-        for (wxFileName *file : files){
+        for (CFile *file : files){
             context->addImage(file);    
         }
         context->reset(imageFilePath);
 
-        std::optional<wxString> currentImageFilePath = context->getImageByIndex(context->getCurrentIndex());
+        std::optional<wxString> currentImageFilePath = context->getImage();
         if(currentImageFilePath.has_value()) {
             updateImageViewer(currentImageFilePath.value());
         } else {
@@ -196,6 +198,7 @@ void ImagePanel::updateImageViewer(wxString imageFilePath) {
     tempBitmap.LoadFile(imageFilePath, wxBITMAP_TYPE_ANY);
     imageViewer->SetBitmap(tempBitmap);
     visualPanel->SetMinSize(wxSize(tempBitmap.GetWidth(), tempBitmap.GetHeight()));
+    mainFrame->setStatusBarText(getStatusBarData());
     visualPanel->Layout();
     rootPanel->Layout();
     imageViewer->Refresh();
@@ -226,7 +229,7 @@ void ImagePanel::slideshowHandler(wxTimerEvent &event) {
             return;
         }
     }
-    std::optional<wxString> currentImageFilePath = context->getImageByIndex(context->getCurrentIndex());
+    std::optional<wxString> currentImageFilePath = context->getImage();
     if(currentImageFilePath.has_value()) {
         updateImageViewer(currentImageFilePath.value());
     } else {
@@ -238,7 +241,7 @@ void ImagePanel::nextHandler(wxCommandEvent &event) {
 
     LOG_INFO("Next Video Handler Invoked");
     if(context->next()) {
-        std::optional<wxString> currentImageFilePath = context->getImageByIndex(context->getCurrentIndex());
+        std::optional<wxString> currentImageFilePath = context->getImage();
         if(currentImageFilePath.has_value()) {
             updateImageViewer(currentImageFilePath.value());
         } else {
@@ -251,7 +254,7 @@ void ImagePanel::previousHandler(wxCommandEvent &event) {
 
     LOG_INFO("Previous Image Handler Invoked");
     if(context->previous()) {
-        std::optional<wxString> currentImageFilePath = context->getImageByIndex(context->getCurrentIndex());
+        std::optional<wxString> currentImageFilePath = context->getImage();
         if(currentImageFilePath.has_value()) {
             updateImageViewer(currentImageFilePath.value());
         } else {
@@ -260,9 +263,9 @@ void ImagePanel::previousHandler(wxCommandEvent &event) {
     }
 }
 
-std::vector<wxFileName *> ImagePanel::GetFilesInDirectory(const wxString &dirPath) {
+std::vector<CFile *> ImagePanel::GetFilesInDirectory(const wxString &dirPath) {
 
-    std::vector<wxFileName *> fileList;
+    std::vector<CFile *> fileList;
     wxDir directory(dirPath);
 
     if (directory.IsOpened()) {
@@ -271,8 +274,8 @@ std::vector<wxFileName *> ImagePanel::GetFilesInDirectory(const wxString &dirPat
         bool hasFiles = directory.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
         while (hasFiles) {
 
-            wxFileName *file = new wxFileName(dirPath, filename, wxPATH_NATIVE);
-            if(context->supportedFormats.count(file->GetExt()) > 0){
+            CFile *file = new CFile(dirPath, filename, wxPATH_NATIVE);
+            if(context->supportedFormats.count(file->getExt()) > 0){
                 fileList.push_back(file);
             }
             hasFiles = directory.GetNext(&filename);
@@ -281,10 +284,7 @@ std::vector<wxFileName *> ImagePanel::GetFilesInDirectory(const wxString &dirPat
     return fileList;
 }
 
-wxPanel *ImagePanel::getRootPanel()
-{
-    return rootPanel;
-}
+wxPanel *ImagePanel::getRootPanel() const { return rootPanel; }
 
 void ImagePanel::alphaPressHandler(wxCommandEvent& event) {
 
@@ -334,7 +334,7 @@ void ImagePanel::keyPressHandler(wxCommandEvent& event) {
 void ImagePanel::OnWindowDestroy(wxWindowDestroyEvent& event) {
 
     if (event.GetEventObject() == rootPanel) {
-        LOG_INFO("RootPanel is being destroyed - cleaning up UI references");
+        LOG_INFO("Image RootPanel is being destroyed - cleaning up UI references");
 
         if (slideShowTimer) {
             slideShowTimer->Stop();
@@ -344,3 +344,5 @@ void ImagePanel::OnWindowDestroy(wxWindowDestroyEvent& event) {
     }
     event.Skip();
 }
+
+const std::vector<wxString> ImagePanel::getStatusBarData() const { return context->getMetaData(); }

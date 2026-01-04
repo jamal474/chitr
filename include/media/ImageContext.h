@@ -1,29 +1,23 @@
 #pragma once
+#include <vector>
 #include <optional>
 #include <wx/wx.h>
-#include <wx/filename.h>
-#include <media/MediaContext.h>
+#include "chitr/CFile.h"
+#include "media/MediaContext.h"
 
 class ImageContext : public MediaContext {
 
 private:
     bool slideShowFlag;
 
-protected:
-    bool setCurrentIndex(int newIndex) override;
-
 public:
     ImageContext();
     ~ImageContext();
-    std::optional<wxString> getImageByIndex(int index);
-    int     getListSize() override;
-    int     getCurrentIndex() override;
-    bool    next() override;
-    bool    previous() override;
-    bool    reset();
-    bool    reset(wxString);
-    void    addImage(wxFileName *);
-    bool    getSlideShowFlag();
-    void    setSlideShowFlag(bool );
+    
+    std::optional<wxString> getImage() const;
+    const std::optional<CFile *> getImageFile() const;
+    void    addImage(CFile *);
+    bool    getSlideShowFlag() const;
+    void    setSlideShowFlag(const bool& );
     
 };

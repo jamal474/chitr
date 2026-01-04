@@ -3,6 +3,8 @@
 #include "media/VideoContext.h"
 #include "chitr/Resource.h"
 #include "component/RoundedText.h"
+#include "chitr/CFile.h"
+#include "chitr/MainFrame.h"
 #include <memory>
 #include <vector>
 #include <optional>
@@ -18,7 +20,7 @@
 #include <wx/filefn.h>
 #include <wx/accel.h>
 
-VideoPanel::VideoPanel(wxFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Resource> resourceAsset) {
+VideoPanel::VideoPanel(MainFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Resource> resourceAsset) {
     
     try {
         rootPanel   = new wxPanel(notebook);
@@ -76,9 +78,9 @@ void VideoPanel::init() {
     playPauseButton     = new wxButton(controlPanel, wxID_ANY, "Play", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE); 
     previousButton      = new wxButton(controlPanel, wxID_ANY, "Previous Video", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
     nextButton          = new wxButton(controlPanel, wxID_ANY, "Next Video", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
-    volumeSlider        = new wxGauge(controlPanel, wxID_ANY, 100, wxDefaultPosition, wxSize(70,2), wxGA_HORIZONTAL | wxGA_SMOOTH);
+    volumeSlider        = new wxGauge(controlPanel, wxID_ANY, VOLUME_RANGE, wxDefaultPosition, wxSize(70,2), wxGA_HORIZONTAL | wxGA_SMOOTH);
     volumeButton        = new wxButton(controlPanel, wxID_ANY, "Volume Video", wxDefaultPosition, wxSize(-1, -1), wxBU_EXACTFIT | wxBU_NOTEXT | wxBORDER_NONE);
-    playbackSlider      = new wxGauge(controlPanel, wxID_ANY, 10000, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL | wxGA_SMOOTH);
+    playbackSlider      = new wxGauge(controlPanel, wxID_ANY, PLAYBACK_RANGE, wxDefaultPosition, wxDefaultSize, wxGA_HORIZONTAL | wxGA_SMOOTH);
     playbackTimer       = new wxTimer();
     playbackTimeText    = new RoundedText(controlPanel, wxID_ANY, "00:00 / 00:00", assets->getSecondaryColour(), *wxWHITE, 20.0);
 
@@ -206,6 +208,14 @@ void VideoPanel::setToolTips() {
     volumeSlider->SetToolTip(std::to_string(context->getVolume()) + "%");
 }
 
+template <typename EventType>
+void VideoPanel::dispatchEvent(void (VideoPanel::*handler)(EventType&), int id)
+{
+    EventType event;
+    event.SetId(id);
+    (this->*handler)(event);
+}
+
 void VideoPanel::uploadHandler(wxCommandEvent &event) {
 
     LOG_INFO("Video Upload Handler Invoked");
@@ -219,16 +229,16 @@ void VideoPanel::uploadHandler(wxCommandEvent &event) {
         wxFileName directory(videoFilePath);
         wxString directoryPath = directory.GetPath();
 
-        std::vector<wxFileName *> files = GetFilesInDirectory(directoryPath);
+        std::vector<CFile *> files = GetFilesInDirectory(directoryPath);
 
         LOG_INFO("Found %d [Image/Video] Files in %s", files.size(), directoryPath);
 
-        for (wxFileName *file : files) {
+        for (CFile *file : files) {
             context->addVideo(file);
         }
         context->reset(videoFilePath);
 
-        std::optional<wxString> currentVideoFilePath = context->getVideoByIndex(context->getCurrentIndex());
+        std::optional<wxString> currentVideoFilePath = context->getVideo();
         if(currentVideoFilePath.has_value()) {
             updateMediaPlayer(currentVideoFilePath.value());
         } else {
@@ -248,15 +258,19 @@ void VideoPanel::updateMediaPlayer(wxString videoFilePath) {
 void VideoPanel::mediaLoadedHandler(wxCommandEvent &event) {
 
     context->setTotalPlaybackTime((long long)mediaPlayer->Length());
-    wxCommandEvent newEvent(wxEVT_BUTTON, event.GetId());
-    playPauseHandler(newEvent);
+    dispatchEvent(&VideoPanel::playPauseHandler);
     playbackTimer->Start(30);
+    try {
+        if (mainFrame)
+            mainFrame->setStatusBarText(getStatusBarData());
+    } catch (const std::exception &exc) {
+        LOG_ERROR("Exception in changeing statusbar : %s", exc.what());
+    }
 }
 
 void VideoPanel::mediaEndedHandler(wxCommandEvent &event) {
 
-    wxCommandEvent newEvent(wxEVT_BUTTON, event.GetId());
-    playPauseHandler(newEvent);
+    dispatchEvent(&VideoPanel::playPauseHandler);
     playbackTimer->Stop();
 }
 
@@ -266,7 +280,10 @@ void VideoPanel::playPauseHandler(wxCommandEvent &event) {
         if (mediaPlayer->Play()) {
             LOG_INFO("Playing Media");
         } else {
-            
+            LOG_INFO("Could Not Play the Media [Either file is not loaded or it does not exist]");
+            std::optional<wxString> file = context->getVideo();
+            if (file.has_value()) LOG_INFO("Current File is : %s", file.value());
+            dispatchEvent(&VideoPanel::uploadHandler);
         } 
         context->setIsPlaying(true);
         playbackTimer->Start(30);
@@ -301,7 +318,7 @@ void VideoPanel::nextHandler(wxCommandEvent &event) {
 
     LOG_INFO("Next Video Handler Invoked");
     if(context->next()) {
-        std::optional<wxString> currentVideoFilePath = context->getVideoByIndex(context->getCurrentIndex());
+        std::optional<wxString> currentVideoFilePath = context->getVideo();
         if(currentVideoFilePath.has_value()) {
             updateMediaPlayer(currentVideoFilePath.value());
         } else {
@@ -314,7 +331,7 @@ void VideoPanel::previousHandler(wxCommandEvent &event) {
 
     LOG_INFO("Previous Video Handler Invoked");
     if(context->previous()) {
-        std::optional<wxString> currentVideoFilePath = context->getVideoByIndex(context->getCurrentIndex());
+        std::optional<wxString> currentVideoFilePath = context->getVideo();
         if(currentVideoFilePath.has_value()) {
             updateMediaPlayer(currentVideoFilePath.value());
         } else {
@@ -334,13 +351,12 @@ void VideoPanel::volumeHandler(wxMouseEvent& event) {
         if (value > volumeSlider->GetRange()) value = volumeSlider->GetRange();
         
         if (value == 0) {
-            wxCommandEvent newEvent(wxEVT_BUTTON, event.GetId());
-            muteHandler(newEvent);
+            dispatchEvent(&VideoPanel::muteHandler);
         }
         
         context->setVolume(value);
         volumeSlider->SetValue(context->getVolume());
-        mediaPlayer->SetVolume(double(context->getVolume())/100.0);  
+        mediaPlayer->SetVolume(static_cast<double>(context->getVolume())/VOLUME_RANGE);
     }
 }
 
@@ -353,22 +369,19 @@ void VideoPanel::seekHandler(wxMouseEvent& event) {
         if (value < 0) value = 0;
         if (value > playbackSlider->GetRange()) value = playbackSlider->GetRange();
         
-        long long timeToSeek = (context->getTotalPlaybackTimeInMiliSecond() * value)/10000;
+        long long timeToSeek = (context->getTotalPlaybackTimeInMiliSecond() * value)/PLAYBACK_RANGE;
 
         playbackSlider->SetValue(value);
         mediaPlayer->Seek(timeToSeek);
         
-        if(!context->getIsPlaying()) {
-            wxCommandEvent newEvent(wxEVT_BUTTON, event.GetId());
-            playPauseHandler(newEvent);
-        }
+        if(!context->getIsPlaying()) { dispatchEvent(&VideoPanel::playPauseHandler); }
         LOG_INFO("Seek Handler Called for Time : %s", CTime::timeString(timeToSeek));
     }
 }
 
-std::vector<wxFileName *> VideoPanel::GetFilesInDirectory(const wxString &dirPath)
+std::vector<CFile *> VideoPanel::GetFilesInDirectory(const wxString &dirPath)
 {
-    std::vector<wxFileName *> fileList;
+    std::vector<CFile *> fileList;
     wxDir directory(dirPath);
     if (directory.IsOpened()){
 
@@ -376,8 +389,8 @@ std::vector<wxFileName *> VideoPanel::GetFilesInDirectory(const wxString &dirPat
         bool hasFiles = directory.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
         while (hasFiles)
         {
-            wxFileName *file = new wxFileName(dirPath, filename, wxPATH_NATIVE);
-            if(context->supportedFormats.count(file->GetExt()) > 0){
+            CFile *file = new CFile(dirPath, filename, wxPATH_NATIVE);
+            if(context->supportedFormats.count(file->getExt()) > 0) {
                 fileList.push_back(file);
             }
             hasFiles = directory.GetNext(&filename);
@@ -386,10 +399,7 @@ std::vector<wxFileName *> VideoPanel::GetFilesInDirectory(const wxString &dirPat
     return fileList;
 }
 
-wxPanel *VideoPanel::getRootPanel()
-{
-    return rootPanel;
-}
+wxPanel *VideoPanel::getRootPanel() const { return rootPanel; }
 
 void VideoPanel::muteHandler(wxCommandEvent &event) {
 
@@ -412,8 +422,7 @@ void VideoPanel::alphaPressHandler(wxCommandEvent& event) {
     char alphabetPressed = 'A' + (event.GetId() - ID_OFFSET_ALPHA);
     switch (alphabetPressed) {
         case 'M': {
-            wxCommandEvent newEvent(wxEVT_BUTTON, event.GetId());
-            muteHandler(newEvent);
+            dispatchEvent(&VideoPanel::muteHandler);
             LOG_INFO("Alphabet Key Event Raised : M [Mute]");
             break;
         }
@@ -428,6 +437,10 @@ void VideoPanel::numPressHandler(wxCommandEvent& event) {
 
     int numberPressed = event.GetId() - ID_OFFSET_NUM;
     LOG_INFO("Number Key Event Raised : %d", numberPressed);
+    int value = PLAYBACK_RANGE * (static_cast<double>(numberPressed)*0.1);
+    long long timeToSeek = (context->getTotalPlaybackTimeInMiliSecond() * value)/PLAYBACK_RANGE;
+    playbackSlider->SetValue(value);
+    mediaPlayer->Seek(timeToSeek);
 }
 
 void VideoPanel::keyPressHandler(wxCommandEvent& event) {
@@ -452,8 +465,7 @@ void VideoPanel::keyPressHandler(wxCommandEvent& event) {
         }
         case ID_SPACE:
         case ID_ENTER: {
-            wxCommandEvent newEvent(wxEVT_BUTTON, event.GetId());
-            playPauseHandler(newEvent);
+            dispatchEvent(&VideoPanel::playPauseHandler);
             break;
         }
     }
@@ -462,7 +474,7 @@ void VideoPanel::keyPressHandler(wxCommandEvent& event) {
 void VideoPanel::OnWindowDestroy(wxWindowDestroyEvent& event) {
 
     if (event.GetEventObject() == rootPanel) {
-        LOG_INFO("RootPanel is being destroyed - cleaning up UI references");
+        LOG_INFO("Video RootPanel is being destroyed - cleaning up UI references");
 
         if (playbackTimer) {
             playbackTimer->Stop();
@@ -478,6 +490,7 @@ void VideoPanel::OnWindowDestroy(wxWindowDestroyEvent& event) {
     event.Skip();
 }
 
+const std::vector<wxString> VideoPanel::getStatusBarData() const { return context->getMetaData(); }
 
 
 

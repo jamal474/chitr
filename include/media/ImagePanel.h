@@ -8,11 +8,12 @@
 #include "media/ImageContext.h"
 #include "media/MediaPanel.h"
 #include "media/ImagePanel.h"
+#include "chitr/CFile.h"
 
 class ImagePanel: public MediaPanel {
 
 protected:
-    virtual std::vector<wxFileName *> GetFilesInDirectory(const wxString& dirPath) override;
+    virtual std::vector<CFile *> GetFilesInDirectory(const wxString& dirPath) override;
     virtual void init() override;
     virtual void setSizers() override;
     virtual void setBindings() override;
@@ -41,7 +42,8 @@ private:
     ImageContext        *context;
 
 public:
-    ImagePanel(wxFrame *, wxNotebook *, std::shared_ptr<Resource>);
+    ImagePanel(MainFrame *, wxNotebook *, std::shared_ptr<Resource>);
     ~ImagePanel();
-    wxPanel *getRootPanel() override;
+    wxPanel *getRootPanel() const override;
+    const std::vector<wxString> getStatusBarData() const override;
 };

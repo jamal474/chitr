@@ -14,8 +14,8 @@ private:
 public:
     CTime();
     CTime(long long );
-    void setTime(long long);
-    long long getMiliseconds();
+    void setTime(long long );
+    long long getMiliseconds() const;
     operator std::string() const;
     static std::string timeString(long long);
 };

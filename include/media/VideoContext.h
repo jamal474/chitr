@@ -1,9 +1,9 @@
 #pragma once
 #include <optional>
 #include <wx/wx.h>
-#include <wx/filename.h>
-#include <media/MediaContext.h>
-#include <chitr/CTime.h>
+#include "chitr/CFile.h"
+#include "media/MediaContext.h"
+#include "chitr/CTime.h"
 
 class VideoContext : public MediaContext {
 
@@ -12,25 +12,18 @@ private:
     int             volume;
     CTime           totalPlaybackTime;
 
-protected:
-    bool setCurrentIndex(int newIndex) override;
-
 public:
     VideoContext();
     ~VideoContext();
-    
-    std::optional<wxString> getVideoByIndex(int index);
-    long long       getTotalPlaybackTimeInMiliSecond();
-    std::string     getTotalPlaybackTimeString();
-    int     getListSize() override;
-    int     getCurrentIndex() override;
-    bool    next() override;
-    bool    previous() override;
-    bool    reset(wxString);
-    void    addVideo(wxFileName *);
-    bool    getIsPlaying();
-    void    setIsPlaying(bool);
-    int     getVolume();
-    void    setVolume(int);
-    void    setTotalPlaybackTime(long long);
+
+    std::optional<wxString> getVideo() const;
+    const std::optional<CFile *> getVideoFile() const;
+    const long long       getTotalPlaybackTimeInMiliSecond() const;
+    const std::string     getTotalPlaybackTimeString() const;
+    void    addVideo(CFile *);
+    bool    getIsPlaying() const;
+    void    setIsPlaying(const bool&);
+    int     getVolume() const;
+    void    setVolume(const int&);
+    void    setTotalPlaybackTime(const long long &);
 };

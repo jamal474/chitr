@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.28)
 project(Chitr)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -19,6 +19,7 @@ endif()
 set(SOURCES
     src/main.cpp
     src/MainFrame.cpp
+    src/media/MediaContext.cpp
     src/media/ImagePanel.cpp
     src/media/ImageContext.cpp
     src/media/VideoPanel.cpp
@@ -26,6 +27,7 @@ set(SOURCES
     src/utils/ChitrLogger.cpp
     src/utils/Resource.cpp
     src/utils/CTime.cpp
+    src/utils/CFile.cpp
     src/component/RoundedText.cpp
 )
 

@@ -8,11 +8,15 @@
 #include "media/VideoContext.h"
 #include "chitr/Resource.h"
 #include "component/RoundedText.h"
+#include "chitr/CFile.h"
+
+#define PLAYBACK_RANGE 10000
+#define VOLUME_RANGE 100
 
 class VideoPanel: public MediaPanel {
 
 protected:
-    virtual std::vector<wxFileName *> GetFilesInDirectory(const wxString& dirPath) override;
+    virtual std::vector<CFile *> GetFilesInDirectory(const wxString& dirPath) override;
     virtual void init() override;
     virtual void setSizers() override;
     virtual void setBindings() override;
@@ -37,6 +41,9 @@ private:
     void numPressHandler(wxCommandEvent& event);
     void keyPressHandler(wxCommandEvent& event);
 
+    template <typename EventType>
+    void dispatchEvent(void (VideoPanel::*handler)(EventType&), int id = wxID_ANY);
+
     wxMediaCtrl     *mediaPlayer;
     wxGauge         *volumeSlider;
     wxGauge         *playbackSlider;
@@ -52,8 +59,9 @@ private:
     VideoContext    *context;
 
 public:
-    VideoPanel(wxFrame *, wxNotebook *, std::shared_ptr<Resource>);
+    VideoPanel(MainFrame *, wxNotebook *, std::shared_ptr<Resource>);
     ~VideoPanel();
-    wxPanel *getRootPanel() override;
+    wxPanel *getRootPanel() const override;
+    const std::vector<wxString> getStatusBarData() const override;
     
 };

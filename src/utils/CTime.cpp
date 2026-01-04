@@ -27,7 +27,7 @@ void CTime::setTime(long long mseconds) {
     calculate(mseconds);
 }
 
-long long CTime::getMiliseconds() {
+long long CTime::getMiliseconds() const {
     return milisecond;
 }
 

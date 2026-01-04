@@ -1,5 +1,6 @@
 #include "media/ImageContext.h"
 #include "chitr/ChitrLogger.h"
+#include "chitr/CFile.h"
 #include <exception>
 #include <optional>
 
@@ -25,76 +26,18 @@ ImageContext::~ImageContext() {
     mediaList.clear();
 }
 
-int ImageContext::getListSize() {
-    return mediaList.size();
-}
-
-bool ImageContext::setCurrentIndex(int newIndex) {
-    try{
-        if(newIndex >= getListSize() || newIndex < 0)
-        {
-            throw std::invalid_argument("Image index is out of bound");
-        }
-        LOG_INFO("Image Index set to %d", newIndex);
-        currentIndex = newIndex;
-        return true;
-    }
-    catch(std::invalid_argument &error)
-    {
-        LOG_ERROR(error.what());
-        return false;
+void ImageContext::addImage(CFile *imageFile) {
+    
+    if (imageFile->doExist()) {
+        addMedia(imageFile);
+        LOG_INFO("Image File Added Successfully");
+    } else {
+        LOG_INFO("Image Does Not Exist, Not Added");
     }
 }
 
-int ImageContext::getCurrentIndex() {
-    return currentIndex;
-}
+std::optional<wxString> ImageContext::getImage() const { return getMediaByIndex(currentIndex); }
+const std::optional<CFile *> ImageContext::getImageFile() const { return getMediaFileByIndex(currentIndex); }
+bool ImageContext::getSlideShowFlag() const { return slideShowFlag; }
+void ImageContext::setSlideShowFlag(const bool &flag) { slideShowFlag = flag; }
 
-void ImageContext::addImage(wxFileName *imageFile) {
-    mediaList.push_back(imageFile);
-    LOG_INFO("Image with Path \"%s\" Added", imageFile->GetFullPath());
-}
-
-std::optional<wxString> ImageContext::getImageByIndex(int index) {
-    try {
-        if(index >= getListSize()) {
-            throw std::invalid_argument("Image index is out of bound");
-        }
-        LOG_INFO("Found Image with Index %d", index);
-        return mediaList[index]->GetFullPath();
-    } catch(std::invalid_argument &error) {
-        LOG_ERROR(error.what());
-        return std::nullopt;
-    }
-}
-
-bool ImageContext::next() {
-    return setCurrentIndex(currentIndex + 1);
-}
-
-bool ImageContext::previous() {
-    return setCurrentIndex(currentIndex - 1);
-}
-
-bool ImageContext::reset() {
-    return setCurrentIndex(0);
-}
-
-bool ImageContext::reset(wxString imageFilePath) {
-    for(int index = 0 ; index < getListSize(); index++){
-        if(mediaList[index]->GetFullPath() == imageFilePath)
-        {
-            setCurrentIndex(index);
-            return true;
-        }
-    }
-    return false;
-}
-
-bool ImageContext::getSlideShowFlag() {
-    return slideShowFlag;
-}
-
-void ImageContext::setSlideShowFlag(bool flag) {
-    slideShowFlag = flag;
-}

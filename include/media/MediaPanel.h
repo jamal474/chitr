@@ -5,6 +5,9 @@
 #include <memory>
 #include "chitr/Resource.h"
 #include "media/MediaContext.h"
+#include "chitr/CFile.h"
+
+class MainFrame;
 
 #define ID_OFFSET_ALPHA   3000  
 #define ID_OFFSET_NUM     4000 
@@ -18,14 +21,14 @@
 class MediaPanel {
 
 protected :
-    virtual std::vector<wxFileName *> GetFilesInDirectory(const wxString& dirPath) = 0;
+    virtual std::vector<CFile *> GetFilesInDirectory(const wxString& dirPath) = 0;
     virtual void init() = 0;
     virtual void setSizers() = 0;
     virtual void setBindings() = 0;
     virtual void setCursors() = 0;
     virtual void setToolTips() = 0;
 
-    wxFrame                     *mainFrame;
+    MainFrame                   *mainFrame;
     wxPanel                     *rootPanel;
     wxPanel                     *visualPanel;
     wxPanel                     *controlPanel;
@@ -35,6 +38,7 @@ protected :
     std::shared_ptr<Resource>   assets;
 
 public :
-    virtual wxPanel *getRootPanel() = 0;
+    virtual wxPanel *getRootPanel() const = 0;
+    virtual const std::vector<wxString> getStatusBarData() const = 0;
 
 };
