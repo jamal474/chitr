@@ -2,6 +2,7 @@
 #include <wx/wx.h>
 #include "chitr/CFile.h"
 #include <vector>
+#include <optional>
 #include <unordered_set>
 
 class MediaContext {

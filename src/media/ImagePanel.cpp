@@ -118,6 +118,7 @@ void ImagePanel::setBindings() {
     previousButton->Bind(wxEVT_BUTTON, &ImagePanel::previousHandler, this);
     slideShowTimer->Bind(wxEVT_TIMER, &ImagePanel::slideshowHandler, this);
     slideShowButton->Bind(wxEVT_BUTTON, &ImagePanel::slideshowOpenClose, this);
+    visualPanel->Bind(wxEVT_SIZE, &ImagePanel::visualPanelResizeHandler, this);
 
     std::vector<wxAcceleratorEntry> acceleratorEntry = getAcceleratorEntries();
     wxAcceleratorTable acceleratorTable(acceleratorEntry.size(), acceleratorEntry.data());
@@ -197,17 +198,50 @@ void ImagePanel::uploadHandler(wxCommandEvent &event) {
     }
 }
 
+
+void ImagePanel::visualPanelResizeHandler(wxSizeEvent& event) {
+    renderImage(); 
+    event.Skip();
+}
 void ImagePanel::updateImageViewer(wxString imageFilePath) {
 
-    wxBitmap tempBitmap;
-    tempBitmap.LoadFile(imageFilePath, wxBITMAP_TYPE_ANY);
-    imageViewer->SetBitmap(tempBitmap);
-    visualPanel->SetMinSize(wxSize(tempBitmap.GetWidth(), tempBitmap.GetHeight()));
+   visualPanel->Freeze(); 
+
+    if (!currentRawImage.LoadFile(imageFilePath, wxBITMAP_TYPE_ANY)) {
+        LOG_ERROR("Failed to load image file: %s", imageFilePath);
+        visualPanel->Thaw();
+        return;
+    }
+    renderImage();
+    visualPanel->Thaw();
+    
     mainFrame->setStatusBarText(getStatusBarData());
-    visualPanel->Layout();
-    rootPanel->Layout();
-    imageViewer->Refresh();
     LOG_INFO("Updated Media Player with %s", imageFilePath);
+}
+
+void ImagePanel::renderImage() {
+    if (!currentRawImage.IsOk()) return;
+
+    int panelW, panelH;
+    visualPanel->GetClientSize(&panelW, &panelH);
+
+    if (panelW <= 0 || panelH <= 0) return;
+
+    int imgW = currentRawImage.GetWidth();
+    int imgH = currentRawImage.GetHeight();
+
+    double scaleX = (double)panelW / imgW;
+    double scaleY = (double)panelH / imgH;
+    double scale = std::min(scaleX, scaleY);
+
+    int newW = (int)(imgW * scale);
+    int newH = (int)(imgH * scale);
+
+    if (newW > 0 && newH > 0) {
+        wxImage scaledImg = currentRawImage.Scale(newW, newH, wxIMAGE_QUALITY_BILINEAR );
+        imageViewer->SetBitmap(wxBitmap(scaledImg));
+    }
+    visualPanel->Layout(); 
 }
 
 void ImagePanel::slideshowOpenClose(wxCommandEvent &event) {

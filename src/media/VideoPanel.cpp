@@ -70,7 +70,12 @@ void VideoPanel::init() {
     
     visualPanel         = new wxPanel(rootPanel, wxID_ANY);
     controlPanel        = new wxPanel(rootPanel, wxID_ANY);
-    mediaPlayer         = new wxMediaCtrl(visualPanel, wxID_ANY);
+
+    #ifdef _WIN32
+        mediaPlayer     = new wxMediaCtrl(visualPanel, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxMEDIABACKEND_WMP10);
+    #else
+        mediaPlayer     = new wxMediaCtrl(visualPanel, wxID_ANY);
+    #endif
 
     rootSizer                   = new wxBoxSizer(wxVERTICAL);
     visualSizer                 = new wxBoxSizer(wxHORIZONTAL);
@@ -256,9 +261,9 @@ void VideoPanel::updateMediaPlayer(wxString videoFilePath) {
 
 void VideoPanel::mediaLoadedHandler(wxCommandEvent &event) {
 
+    LOG_INFO("Video Loaded EVT");
     context->setTotalPlaybackTime((long long)mediaPlayer->Length());
     dispatchEvent(&VideoPanel::playPauseHandler);
-    playbackTimer->Start(30);
     try {
         if (mainFrame)
             mainFrame->setStatusBarText(getStatusBarData());
@@ -269,8 +274,16 @@ void VideoPanel::mediaLoadedHandler(wxCommandEvent &event) {
 
 void VideoPanel::mediaEndedHandler(wxCommandEvent &event) {
 
-    dispatchEvent(&VideoPanel::playPauseHandler);
-    playbackTimer->Stop();
+    LOG_INFO("Video Ended EVT");
+    #ifdef _WIN32
+        if (mediaPlayer->Tell() < context->getTotalPlaybackTimeInMiliSecond()) {
+            return;
+        } else if (mediaPlayer->Tell() == 0 && context->getIsPlaying()) {
+            dispatchEvent(&VideoPanel::playPauseHandler);
+        }
+    #else
+        dispatchEvent(&VideoPanel::playPauseHandler);
+    #endif
 }
 
 void VideoPanel::playPauseHandler(wxCommandEvent &event) {
@@ -285,11 +298,13 @@ void VideoPanel::playPauseHandler(wxCommandEvent &event) {
             dispatchEvent(&VideoPanel::uploadHandler);
         } 
         context->setIsPlaying(true);
+        LOG_INFO("Timer Start");
         playbackTimer->Start(30);
         playPauseButton->SetBitmap(assets->getPauseIcon());
     } else {
         mediaPlayer->Pause();
         context->setIsPlaying(false);
+        LOG_INFO("Timer Stopped");
         playbackTimer->Stop();
         playPauseButton->SetBitmap(assets->getPlayIcon());
     }
@@ -377,6 +392,7 @@ void VideoPanel::seekToValue(int value) {
 
     playbackSlider->SetValue(value);
     mediaPlayer->Seek(timeToSeek);
+    mediaPlayer->Play();
     
     if(!context->getIsPlaying()) { dispatchEvent(&VideoPanel::playPauseHandler); }
     LOG_INFO("Seek To Time : %s", CTime::timeString(timeToSeek));

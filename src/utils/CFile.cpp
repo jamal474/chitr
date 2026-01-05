@@ -31,7 +31,6 @@ bool CFile::refresh(bool forceUpdate = false) {
     }
     sizeBytes = file.GetSize();
     formattedSize = wxFileName::GetHumanReadableSize(sizeBytes);
-
     wxDateTime dt0, dt1, dt2;
     if (file.GetTimes(&dt0, &dt1, &dt2)) {
         creationDateStr = dt2.FormatISODate();

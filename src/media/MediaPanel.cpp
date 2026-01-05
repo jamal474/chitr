@@ -1,5 +1,6 @@
-#include <media/MediaPanel.h>
-#include <media/ImageContext.h>
+#include "media/MediaPanel.h"
+#include "media/ImageContext.h"
+#include "chitr/ChitrLogger.h"
 #include <vector>
 #include <wx/filename.h>
 #include <wx/dir.h>
@@ -30,7 +31,9 @@ void MediaPanel::setBaseContext(std::shared_ptr<MediaContext> newContext) {
         context = newContext;
 }
 
-const std::vector<wxString> MediaPanel::getStatusBarData() const { 
+const std::vector<wxString> MediaPanel::getStatusBarData() const {
+    const std::vector<wxString> temp = context->getMetaData();
+    LOG_INFO("Get Status Bar Data : %s, %s, %s", temp[0], temp[1], temp[2]);
     return context->getMetaData(); 
 }
 

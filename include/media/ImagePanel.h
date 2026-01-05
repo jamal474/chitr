@@ -31,8 +31,11 @@ private:
     void alphaPressHandler(wxCommandEvent& event);
     void numPressHandler(wxCommandEvent& event);
     void keyPressHandler(wxCommandEvent& event);
+    void renderImage();  
+    void visualPanelResizeHandler(wxSizeEvent& event);
 
     wxStaticBitmap      *imageViewer;
+    wxImage             currentRawImage; 
     wxButton            *uploadButton;
     wxButton            *nextButton;
     wxButton            *previousButton;
