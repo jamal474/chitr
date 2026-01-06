@@ -237,7 +237,7 @@ void VideoPanel::uploadHandler(wxCommandEvent &event) {
 
     LOG_INFO("Video Upload Handler Invoked");
     wxFileDialog openFileDialog(rootPanel, "Open Video/Audio file", "", "",
-                                "Media files (*.mp4;*.avi;*.mp3)|*.mp4;*.avi;*.mp3",
+                                UPLOAD_STRING,
                                 wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
     if (openFileDialog.ShowModal() == wxID_OK) {

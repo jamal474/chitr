@@ -5,6 +5,14 @@
 #include "media/MediaContext.h"
 #include "chitr/CTime.h"
 
+#ifdef _WIN32
+#else
+#define SUPPORTED_FORMATS \
+    _T("aac"), _T("aiff"), _T("au"), _T("caf"), \
+    _T("flac"), _T("m4a"), _T("m4v"), _T("mov"), _T("mp3"), \
+    _T("mp4"), _T("mpg"), _T("ogg"), _T("opus"), _T("wav")
+#endif
+
 class VideoContext : public MediaContext {
 
 private:

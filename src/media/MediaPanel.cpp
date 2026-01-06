@@ -23,7 +23,7 @@ std::vector<CFile *> MediaPanel::GetFilesInDirectory(const wxString &dirPath, co
             }
 
             CFile *file = new CFile(dirPath, filename, wxPATH_NATIVE);
-            if(context->supportedFormats.count(file->getExt()) > 0) {
+            if(context->supportedFormats.count(file->getExt().Lower()) > 0) {
                 fileList.push_back(file);
             }
             hasFiles = directory.GetNext(&filename);

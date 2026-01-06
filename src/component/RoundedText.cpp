@@ -68,7 +68,7 @@ void RoundedText::SetTextColor(const wxColour& color) {
 }
 
 void RoundedText::OnPaint(wxPaintEvent& event) {
-    LOG_INFO("Rounded Text : On Paint %d : %d", backSize.GetWidth(), backSize.GetHeight());
+    
     wxAutoBufferedPaintDC dc(this);
     dc.SetBackground(wxBrush(GetParent()->GetBackgroundColour()));
     dc.Clear();
@@ -81,15 +81,13 @@ void RoundedText::OnPaint(wxPaintEvent& event) {
 
         wxSize size = GetClientSize();
         gc->DrawRoundedRectangle(0, 0, size.GetWidth(), size.GetHeight(), cornerRadius);
-        
         gc->SetFont(GetFont(), foreColour);
 
         wxDouble textWidth, textHeight;
         gc->GetTextExtent(labelText, &textWidth, &textHeight, NULL, NULL);
-
         wxDouble x = (size.GetWidth() - textWidth) / 2.0;
         wxDouble y = (size.GetHeight() - textHeight) / 2.0;
-
+        
         gc->DrawText(labelText, x, y);
     }
 }

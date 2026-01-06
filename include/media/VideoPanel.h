@@ -13,6 +13,13 @@
 #define PLAYBACK_RANGE 10000
 #define VOLUME_RANGE 100
 
+#ifdef _WIN32
+#else
+#define UPLOAD_STRING "Media files (*.aac;*.aiff;*.au;*.caf;*.flac;*.m4a;*.m4v;" \
+                      "*.mov;*.mp3;*.mp4;*.mpg;*.ogg;*.opus;*.wav)|*.aac;*.aiff;*.au;" \
+                      "*.caf;*.flac;*.m4a;*.m4v;*.mov;*.mp3;*.mp4;*.mpg;*.ogg;*.opus;*.wav"
+#endif
+
 class VideoPanel: public MediaPanel {
 
 protected:
