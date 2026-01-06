@@ -19,6 +19,7 @@
 #include <wx/filedlg.h>
 #include <wx/filefn.h>
 #include <wx/accel.h>
+#include <thread>
 
 VideoPanel::VideoPanel(MainFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Resource> resourceAsset) {
     
@@ -143,15 +144,15 @@ void VideoPanel::setSizers() {
     controlSizer->Add(controlPanelButtonRowSizer, 0, wxEXPAND | wxBOTTOM, 5);
 
     controlPanel->SetSizer(controlSizer);
-    controlSizer->SetSizeHints(mainFrame);
+    // controlSizer->SetSizeHints(mainFrame);
 
     visualPanel->SetSizer(visualSizer);
-    visualSizer->SetSizeHints(mainFrame);
+    // visualSizer->SetSizeHints(mainFrame);
 
     rootSizer->Add(visualPanel, 2, wxEXPAND | wxALL, 0);
     rootSizer->Add(controlPanel, 0, wxEXPAND | wxALL, 0);
     rootPanel->SetSizer(rootSizer);
-    rootSizer->SetSizeHints(mainFrame);
+    // rootSizer->SetSizeHints(mainFrame);
 
     rootSizer->Layout();
 
@@ -244,15 +245,11 @@ void VideoPanel::uploadHandler(wxCommandEvent &event) {
         wxString videoFilePath = openFileDialog.GetPath();
         wxFileName directory(videoFilePath);
         wxString directoryPath = directory.GetPath();
+        wxString selectedFileName = directory.GetFullName();
 
-        std::vector<CFile *> files = GetFilesInDirectory(directoryPath);
-
-        LOG_INFO("Found %d [Image/Video] Files in %s", files.size(), directoryPath);
-
-        for (CFile *file : files) {
-            context->addVideo(file);
-        }
-        context->reset(videoFilePath);
+        CFile *selectedFile = new CFile(videoFilePath);
+        context->addVideo(selectedFile);
+        context->reset();
 
         std::optional<wxString> currentVideoFilePath = context->getVideo();
         if(currentVideoFilePath.has_value()) {
@@ -260,6 +257,19 @@ void VideoPanel::uploadHandler(wxCommandEvent &event) {
         } else {
             LOG_ERROR("Failed to get Current Video from Context for Directory %s", directoryPath);
         }
+
+        std::thread([this, directoryPath, selectedFileName]() {
+            
+            std::vector<CFile *> files = this->GetFilesInDirectory(directoryPath, selectedFileName);
+            wxTheApp->CallAfter([this, files, directoryPath]() {
+                
+                LOG_INFO("Found %d Video Files in %s", files.size(), directoryPath);
+                for (CFile *file : files){
+                    context->addVideo(file);
+                }
+            });
+
+        }).detach();
         
     }
 }
@@ -275,6 +285,7 @@ void VideoPanel::mediaLoadedHandler(wxCommandEvent &event) {
 
     LOG_INFO("Video Loaded EVT");
     context->setTotalPlaybackTime((long long)mediaPlayer->Length());
+    playbackTimeText->SetupTimerLayout(context->getTotalPlaybackTimeInMiliSecond());
     dispatchEvent(&VideoPanel::playPauseHandler);
     try {
         if (mainFrame)

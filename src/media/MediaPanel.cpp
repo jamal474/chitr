@@ -7,7 +7,7 @@
 #include <wx/wx.h>
 #include <wx/file.h>
 
-std::vector<CFile *> MediaPanel::GetFilesInDirectory(const wxString &dirPath)
+std::vector<CFile *> MediaPanel::GetFilesInDirectory(const wxString &dirPath, const wxString &selectedFileName)
 {
     std::vector<CFile *> fileList;
     wxDir directory(dirPath);
@@ -17,6 +17,11 @@ std::vector<CFile *> MediaPanel::GetFilesInDirectory(const wxString &dirPath)
         bool hasFiles = directory.GetFirst(&filename, wxEmptyString, wxDIR_FILES);
         while (hasFiles)
         {
+            if (filename == selectedFileName) {
+                hasFiles = directory.GetNext(&filename);
+                continue;
+            }
+
             CFile *file = new CFile(dirPath, filename, wxPATH_NATIVE);
             if(context->supportedFormats.count(file->getExt()) > 0) {
                 fileList.push_back(file);

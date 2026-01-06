@@ -24,7 +24,7 @@ private :
     std::shared_ptr<MediaContext> context;
 
 protected :
-    std::vector<CFile *> GetFilesInDirectory(const wxString& dirPath);
+    std::vector<CFile *> GetFilesInDirectory(const wxString& dirPath, const wxString &);
     void setBaseContext(std::shared_ptr<MediaContext> newContext);
 
     template <typename T, typename EventType>

@@ -6,12 +6,14 @@
 #include <memory>
 #include <vector>
 #include <chrono>
+#include <future>
 #include <wx/filename.h>
 #include <wx/dir.h>
 #include <wx/wx.h>
 #include <wx/notebook.h>
 #include <wx/event.h>
 #include <wx/file.h>
+#include <thread>
 
 ImagePanel::ImagePanel(MainFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Resource> resourceAsset) {
     
@@ -103,15 +105,15 @@ void ImagePanel::setSizers() {
     controlSizer->AddStretchSpacer(1);
 
     controlPanel->SetSizer(controlSizer);
-    controlSizer->SetSizeHints(mainFrame);
+    // controlSizer->SetSizeHints(mainFrame);
 
     visualPanel->SetSizer(visualSizer);
-    visualSizer->SetSizeHints(mainFrame);
+    // visualSizer->SetSizeHints(mainFrame);
 
     rootSizer->Add(visualPanel, 2, wxEXPAND | wxALL, 0);
     rootSizer->Add(controlPanel, 0, wxEXPAND | wxALL, 0);
     rootPanel->SetSizer(rootSizer);
-    rootSizer->SetSizeHints(mainFrame);
+    // rootSizer->SetSizeHints(mainFrame);
 
     rootPanel->Layout();
 
@@ -174,7 +176,7 @@ void ImagePanel::uploadHandler(wxCommandEvent &event) {
 
     LOG_INFO("Image Upload Handler Invoked");
     wxFileDialog openFileDialog(rootPanel, "Upload Image", "", "",
-                                "JPEG files (*.jpg;*.jpeg)|*.jpg;*.jpeg|"
+                                "JPEG files (*.jpg;*.jpeg;*.JPG;*.JPEG)|*.jpg;*.jpeg;*.JPG;*.JPEG|"
                                 "PNG files (*.png)|*.png|"
                                 "GIF Files (*.gif)|*.gif|"
                                 "TIFF files (*.tiff;*.tif)|*.tiff;*.tif|"
@@ -187,25 +189,33 @@ void ImagePanel::uploadHandler(wxCommandEvent &event) {
         wxString imageFilePath = openFileDialog.GetPath();
         wxFileName directory(imageFilePath);
         wxString directoryPath = directory.GetPath();
+        wxString selectedFileName = directory.GetFullName();
 
-        std::vector<CFile *> files = GetFilesInDirectory(directoryPath);
-    
-        LOG_INFO("Found %d [Image/Video] Files in %s", files.size(), directoryPath);
-        
-        for (CFile *file : files){
-            context->addImage(file);    
-        }
-        context->reset(imageFilePath);
+        CFile *selectedFile = new CFile(imageFilePath);
+        context->addImage(selectedFile);
+        context->reset();
 
         std::optional<wxString> currentImageFilePath = context->getImage();
         if(currentImageFilePath.has_value()) {
             updateImageViewer(currentImageFilePath.value());
         } else {
             LOG_ERROR("Failed to get Current Image from Context for Directory %s", directoryPath);
-        }        
+        } 
+        
+        std::thread([this, directoryPath, selectedFileName]() {
+            
+            std::vector<CFile *> files = this->GetFilesInDirectory(directoryPath, selectedFileName);
+            wxTheApp->CallAfter([this, files, directoryPath]() {
+                
+                LOG_INFO("Found %d [Image/Video] Files in %s", files.size(), directoryPath);
+                for (CFile *file : files){
+                    context->addImage(file);
+                }
+            });
+
+        }).detach();
     }
 }
-
 
 void ImagePanel::visualPanelResizeHandler(wxSizeEvent& event) {
     renderImage(); 
@@ -246,7 +256,7 @@ void ImagePanel::renderImage() {
     int newH = (int)(imgH * scale);
 
     if (newW > 0 && newH > 0) {
-        wxImage scaledImg = currentRawImage.Scale(newW, newH, wxIMAGE_QUALITY_BILINEAR );
+        wxImage scaledImg = currentRawImage.Scale(newW, newH, wxIMAGE_QUALITY_HIGH );
         imageViewer->SetBitmap(wxBitmap(scaledImg));
     }
     visualPanel->Layout(); 

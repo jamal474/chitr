@@ -47,7 +47,7 @@ CTime::operator std::string() const {
 
     if (minute == 0) {
         minuteString = "00";
-    } else if (hour <= 9) {
+    } else if (minute <= 9) {
         minuteString = std::format("0{}",minute);
     } else {
         minuteString = std::format("{}", minute);

@@ -12,7 +12,7 @@ VideoContext::VideoContext() {
     currentIndex = 0;
     volume = 100;
     isPlaying = false;
-    supportedFormats.insert({ _T("mp3"), _T("mp4")});  
+    supportedFormats.insert({ _T("mp3"), _T("mp4"), _T("MP4"), _T("MP3")});  
 }
 
 VideoContext::~VideoContext() {

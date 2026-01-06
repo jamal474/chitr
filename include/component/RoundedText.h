@@ -9,6 +9,7 @@ public:
                 const wxColour& bgColor, const wxColour& fgColor, 
                 double radius = 10.0);
 
+    void SetupTimerLayout(long long totalDurationMs);
     void SetLabel(const wxString& label) override;
     wxString GetLabel() const override;
 
@@ -20,8 +21,9 @@ protected:
     void OnPaint(wxPaintEvent& event);
 
 private:
-    wxStaticText    *textLabel;
-    wxBoxSizer      *sizer;
+    wxString        labelText;
+    wxColour        foreColour;
     wxColour        backColour;
     double          cornerRadius;
+    wxSize          backSize;
 };
