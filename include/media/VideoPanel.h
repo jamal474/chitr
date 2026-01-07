@@ -14,6 +14,9 @@
 #define VOLUME_RANGE 100
 
 #ifdef _WIN32
+#define UPLOAD_STRING "Media files (*.aac;*.aiff;*.au;*.flac;*.m4a;*.mp3;*.wma;*.wav;*.mp4;" \
+                      "*.m4v;*.mov;*.mpg;*.avi;*.mkv;*.wmv)|*.aac;*.aiff;*.au;*.flac;*.m4a;" \
+                      "*.mp3;*.wma;*.wav;*.mp4;*.m4v;*.mov;*.mpg;*.avi;*.mkv;*.wmv"
 #else
 #define UPLOAD_STRING "Media files (*.aac;*.aiff;*.au;*.caf;*.flac;*.m4a;*.m4v;" \
                       "*.mov;*.mp3;*.mp4;*.mpg;*.ogg;*.opus;*.wav)|*.aac;*.aiff;*.au;" \

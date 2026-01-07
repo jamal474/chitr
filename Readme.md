@@ -37,3 +37,35 @@ conan build .
 * Playback status bar in video player and its interaction for reverse play or rewind.
 * Add Support for more formats.
 
+## Supported Media Formats
+
+This project utilizes **wxWidgets** (C++) to provide cross-platform media viewing. Below is the breakdown of supported file extensions for Windows and macOS.
+
+### Images
+*Universal support across all platforms.*
+
+| Platform | Supported Extensions |
+| :--- | :--- |
+| **Windows & Mac** | `JPG`, `PNG`, `GIF`, `TIFF`, `PCX`, `PNM`, `XPM` |
+
+---
+
+### Video Support
+
+| Platform | Supported Extensions |
+| :--- | :--- |
+| **Windows & Mac** | `mp4`, `m4v`, `mov`, `mpg` |
+| **Windows Only** | <kbd>avi</kbd> <kbd>mkv</kbd> <kbd>wmv</kbd> |
+| **macOS Only** | *(Relies on common formats)* |
+
+### Audio Support
+
+| Platform | Supported Extensions |
+| :--- | :--- |
+| **Windows & Mac** | `aac`, `aiff`, `au`, `flac`, `m4a`, `mp3`, `wav` |
+| **Windows Only** | <kbd>wma</kbd> |
+| **macOS Only** | <kbd>caf</kbd> <kbd>ogg</kbd> <kbd>opus</kbd> |
+
+---
+> **Note:** Format support is determined by the underlying OS media frameworks utilized by the C++ backend.
+
