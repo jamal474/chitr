@@ -14,13 +14,16 @@
 #define VOLUME_RANGE 100
 
 #ifdef _WIN32
-#define UPLOAD_STRING "Media files (*.aac;*.aiff;*.au;*.flac;*.m4a;*.mp3;*.wma;*.wav;*.mp4;" \
-                      "*.m4v;*.mov;*.mpg;*.avi;*.mkv;*.wmv)|*.aac;*.aiff;*.au;*.flac;*.m4a;" \
-                      "*.mp3;*.wma;*.wav;*.mp4;*.m4v;*.mov;*.mpg;*.avi;*.mkv;*.wmv"
+#define UPLOAD_STRING "Media files (*.aac;*.mp4;*.mov;...)|" \
+                      "*.aac;*.AAC;*.aiff;*.AIFF;*.au;*.AU;*.flac;*.FLAC;*.m4a;*.M4A" \
+                      "*.mp3;*.MP3;*.wma;*.WMA;*.wav;*.WAV;*.mp4;*.MP4;*.m4v;*.M4V;" \
+                      "*.mov;*.MOV;*.mpg;*.MPG;*.avi;*.AVI;*.mkv;*.MKV;*.wmv;*.WMV"
 #else
-#define UPLOAD_STRING "Media files (*.aac;*.aiff;*.au;*.caf;*.flac;*.m4a;*.m4v;" \
-                      "*.mov;*.mp3;*.mp4;*.mpg;*.ogg;*.opus;*.wav)|*.aac;*.aiff;*.au;" \
-                      "*.caf;*.flac;*.m4a;*.m4v;*.mov;*.mp3;*.mp4;*.mpg;*.ogg;*.opus;*.wav"
+#define UPLOAD_STRING "Media files (*.aac;*.mp4;*.wav;...)|" \
+                      "*.aac;*.AAC;*.aiff;*.AIFF;*.au;*.AU;*.caf;*.CAF;" \
+                      "*.flac;*.FLAC;*.m4a;*.M4A;*.m4v;*.M4V;*.mov;*.MOV;" \
+                      "*.mp3;*.MP3;*.mp4;*.MP4;*.mpg;*.MPG;*.ogg;*.OGG;" \
+                      "*.opus;*.OPUS;*.wav;*.WAV"
 #endif
 
 class VideoPanel: public MediaPanel {
