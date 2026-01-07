@@ -6,11 +6,17 @@
 #include "chitr/CTime.h"
 
 #ifdef _WIN32
+#define SUPPORTED_FORMATS \
+    _T("aac"), _T("aiff"), _T("au"), _T("flac"), \
+    _T("m4a"), _T("mp3"), _T("wav"), _T("wma"), \
+    _T("mp4"), _T("m4v"), _T("mov"), _T("mpg"), \
+    _T("avi"), _T("mkv"), _T("wmv")
 #else
 #define SUPPORTED_FORMATS \
     _T("aac"), _T("aiff"), _T("au"), _T("caf"), \
-    _T("flac"), _T("m4a"), _T("m4v"), _T("mov"), _T("mp3"), \
-    _T("mp4"), _T("mpg"), _T("ogg"), _T("opus"), _T("wav")
+    _T("flac"), _T("m4a"), _T("m4v"), _T("mov"), \
+    _T("mp3"), _T("mp4"), _T("mpg"), _T("ogg"), \
+    _T("opus"), _T("wav")
 #endif
 
 class VideoContext : public MediaContext {

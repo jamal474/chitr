@@ -176,13 +176,14 @@ void ImagePanel::uploadHandler(wxCommandEvent &event) {
 
     LOG_INFO("Image Upload Handler Invoked");
     wxFileDialog openFileDialog(rootPanel, "Upload Image", "", "",
+                                "All Image Files|*.jpg;*.jpeg;*.JPG;*.JPEG;*.png;*.PNG;*.gif;*.GIF;*.tiff;*.TIFF;*.tif;*.TIF;*.pcx;*.PCX;*.pnm;*.PNM;*.xpm;*.XPM|"
                                 "JPEG files (*.jpg;*.jpeg;*.JPG;*.JPEG)|*.jpg;*.jpeg;*.JPG;*.JPEG|"
-                                "PNG files (*.png)|*.png|"
-                                "GIF Files (*.gif)|*.gif|"
-                                "TIFF files (*.tiff;*.tif)|*.tiff;*.tif|"
-                                "PCX files (*.pcx)|*.pcx|"
-                                "PNM files (*.pnm)|*.pnm|"
-                                "XPM files (*.xpm)|*.xpm",
+                                "PNG files (*.png;*.PNG)|*.png;*.PNG|"
+                                "GIF Files (*.gif;*.GIF)|*.gif;*.GIF|"
+                                "TIFF files (*.tiff;*.tif;*.TIFF;*.TIF)|*.tiff;*.TIFF;*.tif;*.TIF|"
+                                "PCX files (*.pcx;*.PCX)|*.pcx;*.PCX|"
+                                "PNM files (*.pnm;*.PNM)|*.pnm;*.PNM|"
+                                "XPM files (*.xpm;*.XPM)|*.xpm;*.XPM",
                                 wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
     if (openFileDialog.ShowModal() == wxID_OK) {
