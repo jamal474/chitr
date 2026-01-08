@@ -46,6 +46,7 @@ private:
     void nextHandler(wxCommandEvent &event);
     void previousHandler(wxCommandEvent &event);
     void volumeHandler(wxMouseEvent& event);
+    void volumeToValue(const int &volume);
     void seekHandler(wxMouseEvent& event);
     void seekToValue(int value);
     void muteHandler(wxCommandEvent &event);

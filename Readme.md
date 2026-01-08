@@ -22,7 +22,7 @@
 ## Demo video
 
 <p align="center">
-  <a href="https://youtu.be/KM7Q8GF_5LU?si=XXWhheSZN4hlepyJ">
+  <a href="https://youtu.be/8d4SarF3NFY?si=icJeLysIEeKS11XW">
     <img src="./assets/thumbnail.png" width="40%" title="click to see demo" alt="Demo Thumbnail">
   </a>
 </p>
@@ -64,7 +64,8 @@ This project utilizes **wxWidgets** (C++) to provide cross-platform media viewin
 </table>
 
 ---
-> **Note:** Format support is determined by the underlying OS media frameworks utilized by the C++ backend.
+> **Note:** Format support is determined by the underlying OS media frameworks utilized by the C++ backend. Supported formats have been verified through testing on **macOS 26 Tahoe** and **Windows 10**.
+
 
 ## Keyboard Shortcuts
 
@@ -85,6 +86,8 @@ This project utilizes **wxWidgets** (C++) to provide cross-platform media viewin
 <tr><td align="center"><code>L</code></td><td align="center">Seek forward</td><td align="center">+10 seconds</td></tr>
 <tr><td align="center"><code>↑</code></td><td align="center">Volume up</td><td align="center">+1%</td></tr>
 <tr><td align="center"><code>↓</code></td><td align="center">Volume down</td><td align="center">-1%</td></tr>
+<tr><td align="center"><code>ALT</code> / <code>OPTION</code> + <code>←</code></td><td align="center">Previous</td><td align="center">Load Previous video</td></tr>
+<tr><td align="center"><code>ALT</code> / <code>OPTION</code> + <code>→</code></td><td align="center">Next</td><td align="center">Load Next video</td></tr>
 <tr><td align="center"><code>Space</code> / <code>K</code></td><td align="center">Play/Pause</td><td align="center">Toggle playback</td></tr>
 <tr><td align="center"><code>M</code></td><td align="center">Mute</td><td align="center">Toggle audio</td></tr>
 <tr><td align="center"><code>0-9</code></td><td align="center">Jump to position</td><td align="center">Seek to percentage (3 = 30%)</td></tr>

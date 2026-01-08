@@ -186,6 +186,8 @@ void VideoPanel::setBindings() {
     rootPanel->Bind(wxEVT_MENU, &VideoPanel::keyPressHandler, this, ID_ARROW_RIGHT);
     rootPanel->Bind(wxEVT_MENU, &VideoPanel::keyPressHandler, this, ID_SPACE);
     rootPanel->Bind(wxEVT_MENU, &VideoPanel::keyPressHandler, this, ID_ENTER);
+    rootPanel->Bind(wxEVT_MENU, &VideoPanel::keyPressHandler, this, ID_ALT_ARROW_LEFT);
+    rootPanel->Bind(wxEVT_MENU, &VideoPanel::keyPressHandler, this, ID_ALT_ARROW_RIGHT);
 }
 
 std::vector<wxAcceleratorEntry> VideoPanel::getAcceleratorEntries() {
@@ -208,6 +210,8 @@ std::vector<wxAcceleratorEntry> VideoPanel::getAcceleratorEntries() {
     entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_RIGHT, ID_ARROW_RIGHT));
     entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_RETURN, ID_ENTER));
     entries.push_back(wxAcceleratorEntry(wxACCEL_NORMAL, WXK_SPACE, ID_SPACE));
+    entries.push_back(wxAcceleratorEntry(wxACCEL_ALT, WXK_LEFT, ID_ALT_ARROW_LEFT));
+    entries.push_back(wxAcceleratorEntry(wxACCEL_ALT, WXK_RIGHT, ID_ALT_ARROW_RIGHT));
 
     return entries;
 }
@@ -377,6 +381,17 @@ void VideoPanel::previousHandler(wxCommandEvent &event) {
     }
 }
 
+void VideoPanel::volumeToValue(const int &volume) {
+
+    context->setVolume(volume);
+
+    if (volume == 0) volumeButton->SetBitmap(assets->getMuteIcon());
+    if (volume != 0) volumeButton->SetBitmap(assets->getVolumeIcon());
+
+    volumeSlider->SetValue(context->getVolume());
+    mediaPlayer->SetVolume(static_cast<double>(context->getVolume())/VOLUME_RANGE); 
+}
+
 void VideoPanel::volumeHandler(wxMouseEvent& event) {
 
     if (event.LeftIsDown()) {
@@ -386,14 +401,7 @@ void VideoPanel::volumeHandler(wxMouseEvent& event) {
         
         if (value < 0) value = 0;
         if (value > volumeSlider->GetRange()) value = volumeSlider->GetRange();
-        
-        if (value == 0) {
-            dispatchEvent(&VideoPanel::muteHandler);
-        }
-        
-        context->setVolume(value);
-        volumeSlider->SetValue(context->getVolume());
-        mediaPlayer->SetVolume(static_cast<double>(context->getVolume())/VOLUME_RANGE);
+        volumeToValue(value);
     }
 }
 
@@ -423,15 +431,11 @@ void VideoPanel::seekToValue(int value) {
 
 void VideoPanel::muteHandler(wxCommandEvent &event) {
 
-    bool isSliderVisible = volumeSlider->IsShown();
-    if (isSliderVisible) {
-        volumeButton->SetBitmap(assets->getMuteIcon());
-        volumeSlider->Show(false);
-        mediaPlayer->SetVolume(0.0);  
+    bool isMute = context->getVolume() == 0;
+    if (isMute) {
+        volumeToValue(10); 
     } else {
-        volumeButton->SetBitmap(assets->getVolumeIcon());
-        volumeSlider->Show(true);
-        mediaPlayer->SetVolume(double(context->getVolume())/100.0);  
+        volumeToValue(0);  
     }
     LOG_INFO("Mute Handler Invoked");
     
@@ -487,19 +491,15 @@ void VideoPanel::keyPressHandler(wxCommandEvent& event) {
             int currentVolume = context->getVolume();
             if (currentVolume != 100) {
                 context->setVolume(currentVolume + 1);
-                volumeSlider->SetValue(context->getVolume());
-                mediaPlayer->SetVolume(static_cast<double>(context->getVolume())/VOLUME_RANGE);
+                dispatchEvent(&VideoPanel::muteHandler);
             }
             break;
         }
         case ID_ARROW_DOWN: {
             int currentVolume = context->getVolume();
             if (currentVolume != 0) {
-
                 context->setVolume(currentVolume - 1);
-                volumeSlider->SetValue(context->getVolume());
-                mediaPlayer->SetVolume(static_cast<double>(context->getVolume())/VOLUME_RANGE);
-                if (context->getVolume() == 0) { dispatchEvent(&VideoPanel::muteHandler); }
+                dispatchEvent(&VideoPanel::muteHandler);
             }
             break;
         }
@@ -513,8 +513,16 @@ void VideoPanel::keyPressHandler(wxCommandEvent& event) {
             seekToValue(playbackSlider->GetValue() + valueIncrement);
             break;
         }
-        case ID_SPACE:{
+        case ID_SPACE: {
             dispatchEvent(&VideoPanel::playPauseHandler);
+            break;
+        }
+        case ID_ALT_ARROW_LEFT: {
+            dispatchEvent(&VideoPanel::previousHandler);
+            break;
+        }
+        case ID_ALT_ARROW_RIGHT: {
+            dispatchEvent(&VideoPanel::nextHandler);
             break;
         }
     }

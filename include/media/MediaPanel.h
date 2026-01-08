@@ -9,14 +9,18 @@
 
 class MainFrame;
 
-#define ID_OFFSET_ALPHA   3000  
-#define ID_OFFSET_NUM     4000 
-#define ID_ARROW_UP       5001
-#define ID_ARROW_DOWN     5002
-#define ID_ARROW_LEFT     5003
-#define ID_ARROW_RIGHT    5004
-#define ID_SPACE          6000
-#define ID_ENTER          6001
+enum {
+    ID_OFFSET_ALPHA = wxID_HIGHEST,
+    ID_OFFSET_NUM = wxID_HIGHEST + 1000,
+    ID_ARROW_UP = wxID_HIGHEST + 2000,
+    ID_ARROW_DOWN,
+    ID_ARROW_LEFT,
+    ID_ARROW_RIGHT,
+    ID_ALT_ARROW_LEFT,
+    ID_ALT_ARROW_RIGHT,
+    ID_SPACE = wxID_HIGHEST + 3000,
+    ID_ENTER
+};
 
 class MediaPanel {
 
