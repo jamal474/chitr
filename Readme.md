@@ -27,17 +27,43 @@
   </a>
 </p>
 
-## Install
+## Prerequisites
 
+### Install Conan
+
+**Windows (using Scoop):**
+```shell
+scoop install conan
+```
+
+**macOS (using Homebrew):**
+```shell
+brew install conan
+```
+
+### Detect Conan Profile
+```shell
+conan profile detect --force
+```
+
+## Build Steps
+
+### 1. Install Dependencies
 ```shell
 conan install . --build=missing
 ```
 
-## Build
-
+### 2. Build Project
 ```shell
 conan build .
 ```
+
+## Run
+```shell
+./build/Release/Chitr
+```
+
+*(Use `.\build\Release\Chitr.exe` on Windows)*
 
 ## Supported Media Formats
 
@@ -86,8 +112,8 @@ This project utilizes **wxWidgets** (C++) to provide cross-platform media viewin
 <tr><td align="center"><code>L</code></td><td align="center">Seek forward</td><td align="center">+10 seconds</td></tr>
 <tr><td align="center"><code>↑</code></td><td align="center">Volume up</td><td align="center">+1%</td></tr>
 <tr><td align="center"><code>↓</code></td><td align="center">Volume down</td><td align="center">-1%</td></tr>
-<tr><td align="center"><code>ALT</code> / <code>OPTION</code> + <code>←</code></td><td align="center">Previous</td><td align="center">Load Previous video</td></tr>
-<tr><td align="center"><code>ALT</code> / <code>OPTION</code> + <code>→</code></td><td align="center">Next</td><td align="center">Load Next video</td></tr>
+<tr><td align="center"><code>ALT</code> / <code>OPTION</code> + <code>←</code></td><td align="center">Previous</td><td align="center">Load previous video</td></tr>
+<tr><td align="center"><code>ALT</code> / <code>OPTION</code> + <code>→</code></td><td align="center">Next</td><td align="center">Load next video</td></tr>
 <tr><td align="center"><code>Space</code> / <code>K</code></td><td align="center">Play/Pause</td><td align="center">Toggle playback</td></tr>
 <tr><td align="center"><code>M</code></td><td align="center">Mute</td><td align="center">Toggle audio</td></tr>
 <tr><td align="center"><code>0-9</code></td><td align="center">Jump to position</td><td align="center">Seek to percentage (3 = 30%)</td></tr>
