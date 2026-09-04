@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+# Cancel superseded runs on the same PR / branch.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2
+          key: conan-${{ matrix.os }}-${{ hashFiles('conanfile.py') }}
+          restore-keys: |
+            conan-${{ matrix.os }}-
+
+      - name: Install Conan
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          pip install "conan>=2.0"
+          conan profile detect --force
+
+      - name: Install Linux system dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            pkg-config \
+            libgtk-3-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libwebkit2gtk-4.1-dev \
+            libsecret-1-dev \
+            libnotify-dev \
+            libsdl2-dev \
+            libgstreamer1.0-dev \
+            libgstreamer-plugins-base1.0-dev
+
+      - name: Conan install
+        shell: bash
+        run: conan install . --build=missing -s build_type=Release
+
+      - name: Conan build
+        shell: bash
+        run: conan build . -s build_type=Release
+
+      - name: List build output
+        shell: bash
+        run: |
+          echo "== build/ =="
+          find build -maxdepth 3 -type f \( -name "Chitr" -o -name "Chitr.exe" \) -print || true
