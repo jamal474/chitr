@@ -1,9 +1,11 @@
 #pragma once
+#include <memory>
+#include <vector>
 #include <wx/wx.h>
 #include <wx/notebook.h>
 #include <wx/statusbr.h>
 #include "chitr/Resource.h"
-#include "vector"
+// (removed stray `#include "vector"` — replaced by <vector> above)
 
 class MediaPanel;
 

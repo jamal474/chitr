@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <wx/wx.h>
 #include <wx/notebook.h>
 #include <wx/event.h>
