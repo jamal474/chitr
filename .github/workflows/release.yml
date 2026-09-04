@@ -3,8 +3,17 @@ name: Release
 on:
   push:
     tags:
-      # Matches vMM.mm.pp — e.g. v0.1.0, v1.20.3
+      # Release tags:      v0.1.0, v1.20.3
       - 'v[0-9]+.[0-9]+.[0-9]+'
+      # Pre-release / test tags: v0.1.0-test2, v1.0.0-rc.1, v2.0.0-beta.4
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+  # Manual runs from the Actions tab — useful for testing without pushing a tag.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (without leading v)'
+        required: true
+        default: '0.0.0-manual'
 
 jobs:
   build:
@@ -31,16 +40,30 @@ jobs:
       - name: Resolve version
         id: version
         shell: bash
+        env:
+          MANUAL_VERSION: ${{ inputs.version }}
         run: |
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
-          echo "tag=${GITHUB_REF_NAME}"          >> "$GITHUB_OUTPUT"
-          echo "version=${TAG_VERSION}"          >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            TAG_VERSION="${MANUAL_VERSION#v}"
+            TAG="v${TAG_VERSION}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+            TAG_VERSION="${TAG#v}"
+          fi
+          echo "tag=${TAG}"                 >> "$GITHUB_OUTPUT"
+          echo "version=${TAG_VERSION}"     >> "$GITHUB_OUTPUT"
           if [ -f VERSION ]; then
             FILE_VERSION="$(tr -d '[:space:]' < VERSION)"
-            echo "VERSION file: '${FILE_VERSION}', tag version: '${TAG_VERSION}'"
-            if [ "${FILE_VERSION}" != "${TAG_VERSION}" ]; then
-              echo "::warning::VERSION file (${FILE_VERSION}) does not match tag (${TAG_VERSION}). Please keep them in sync."
-            fi
+            echo "VERSION file: '${FILE_VERSION}', release version: '${TAG_VERSION}'"
+            # Only warn on stable releases (no pre-release suffix) to avoid noise on test tags.
+            case "${TAG_VERSION}" in
+              *-*) : ;;  # pre-release tag, skip check
+              *)
+                if [ "${FILE_VERSION}" != "${TAG_VERSION}" ]; then
+                  echo "::warning::VERSION file (${FILE_VERSION}) does not match tag (${TAG_VERSION}). Please keep them in sync."
+                fi
+                ;;
+            esac
           fi
 
       - name: Setup Python
@@ -168,6 +191,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Resolve release tag
+        id: rel
+        shell: bash
+        env:
+          MANUAL_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            TAG="v${MANUAL_VERSION#v}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -183,7 +219,8 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Chitr ${{ github.ref_name }}
+          tag_name: ${{ steps.rel.outputs.tag }}
+          name: Chitr ${{ steps.rel.outputs.tag }}
           generate_release_notes: true
+          prerelease: ${{ contains(steps.rel.outputs.tag, '-') }}
           files: release/*.zip
