@@ -6,6 +6,7 @@
 #include <wx/dir.h>
 #include <wx/wx.h>
 #include <wx/file.h>
+#include <memory>
 
 std::vector<CFile *> MediaPanel::GetFilesInDirectory(const wxString &dirPath, const wxString &selectedFileName)
 {

@@ -5,6 +5,9 @@
 #include <sstream>
 #include <vector>
 #include <cstdio>
+#include <set>
+#include <mutex>
+#include <string>
 
 const std::string RESET_COLOR =     "\033[0m";
 const std::string RED_COLOR =       "\033[31m";
