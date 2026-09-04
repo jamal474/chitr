@@ -9,7 +9,14 @@ set(CHITR_LOG_LEVEL 1 CACHE STRING "Set Log Level (0=OFF, 1=ERROR, 2=INFO, 3=DEB
 
 add_compile_definitions(CHITR_LOG_LEVEL=${CHITR_LOG_LEVEL})
 
-find_package(wxWidgets REQUIRED COMPONENTS net core base)
+# On Linux we consume system wxWidgets (see conanfile.py for the why).
+# System wxWidgets requires the "media" component explicitly for wxMediaCtrl
+# to link — Conan's cmakedeps exports all built libs so this is only needed here.
+if(UNIX AND NOT APPLE)
+    find_package(wxWidgets REQUIRED COMPONENTS media net core base)
+else()
+    find_package(wxWidgets REQUIRED COMPONENTS net core base)
+endif()
 find_package(iconfontcppheaders REQUIRED)
 
 if(wxWidgets_USE_FILE)
