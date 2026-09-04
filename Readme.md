@@ -41,6 +41,42 @@ scoop install conan
 brew install conan
 ```
 
+**Linux (via pip):**
+```shell
+pip install "conan>=2.0"
+```
+
+### Linux: install wxWidgets from your package manager
+
+On Linux, Chitr uses the system wxWidgets rather than the Conan Center one
+(the Conan Center `wxwidgets` recipe pins a `gst-plugins-base` version that is
+Conan-1-only and no longer resolvable under Conan 2). Install wxWidgets 3.2
+with media support:
+
+**Ubuntu 24.04 / Debian 13+:**
+```shell
+sudo apt-get install libwxgtk3.2-dev libwxgtk-media3.2-dev
+```
+
+**Ubuntu 22.04 (jammy):** the default repos ship wxWidgets 3.0, so add the
+official wxWidgets APT repository first:
+```shell
+sudo apt-get install ca-certificates curl gnupg
+curl -fsSL https://repos.codelite.org/CodeLite.asc \
+  | sudo gpg --dearmor -o /etc/apt/keyrings/codelite.gpg
+echo "deb [signed-by=/etc/apt/keyrings/codelite.gpg] https://repos.codelite.org/wx3.2.5/ubuntu/ jammy universe" \
+  | sudo tee /etc/apt/sources.list.d/wxwidgets.list
+sudo apt-get update
+sudo apt-get install libwxgtk3.2-dev libwxgtk-media3.2-dev
+```
+
+**Fedora / RHEL:**
+```shell
+sudo dnf install wxGTK3-devel gstreamer1-plugins-base-devel
+```
+
+On Windows and macOS, wxWidgets is provided by Conan — nothing extra to install.
+
 ### Detect Conan Profile
 ```shell
 conan profile detect --force

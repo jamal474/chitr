@@ -10,6 +10,7 @@
 #include <wx/wx.h>
 #include <wx/icon.h>
 #include <vector>
+#include <memory>
 
 MainFrame::MainFrame(const wxString &title) : wxFrame(NULL, wxID_ANY, title)
 {

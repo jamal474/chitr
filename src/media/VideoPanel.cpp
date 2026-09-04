@@ -20,6 +20,7 @@
 #include <wx/filefn.h>
 #include <wx/accel.h>
 #include <thread>
+#include <string>
 
 VideoPanel::VideoPanel(MainFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Resource> resourceAsset) {
     

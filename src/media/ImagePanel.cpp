@@ -14,6 +14,8 @@
 #include <wx/event.h>
 #include <wx/file.h>
 #include <thread>
+#include <algorithm>
+#include <optional>
 
 ImagePanel::ImagePanel(MainFrame *mFrame, wxNotebook *notebook, std::shared_ptr<Resource> resourceAsset) {
     

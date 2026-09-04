@@ -4,6 +4,7 @@
 #include <exception>
 #include <optional>
 #include <algorithm>
+#include <string>
 
 
 VideoContext::VideoContext() {

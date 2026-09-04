@@ -2,6 +2,7 @@
 #include "chitr/ChitrLogger.h"
 #include <wx/wx.h>
 #include <wx/dcbuffer.h>
+#include <memory>
 
 RoundedText::RoundedText(wxWindow* parent, wxWindowID id, const wxString& text, 
                          const wxColour& bgColor, const wxColour& fgColor, 

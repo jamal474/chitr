@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include <optional>
 #include <wx/wx.h>
 #include "chitr/CFile.h"

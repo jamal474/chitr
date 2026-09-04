@@ -1,0 +1,189 @@
+name: Release
+
+on:
+  push:
+    tags:
+      # Matches vMM.mm.pp — e.g. v0.1.0, v1.20.3
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+            arch: x86_64
+          - os: windows-2022
+            name: windows
+            arch: x86_64
+          - os: macos-latest
+            name: macos
+            arch: arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          echo "tag=${GITHUB_REF_NAME}"          >> "$GITHUB_OUTPUT"
+          echo "version=${TAG_VERSION}"          >> "$GITHUB_OUTPUT"
+          if [ -f VERSION ]; then
+            FILE_VERSION="$(tr -d '[:space:]' < VERSION)"
+            echo "VERSION file: '${FILE_VERSION}', tag version: '${TAG_VERSION}'"
+            if [ "${FILE_VERSION}" != "${TAG_VERSION}" ]; then
+              echo "::warning::VERSION file (${FILE_VERSION}) does not match tag (${TAG_VERSION}). Please keep them in sync."
+            fi
+          fi
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2
+          key: conan-${{ matrix.os }}-${{ hashFiles('conanfile.py') }}
+          restore-keys: |
+            conan-${{ matrix.os }}-
+
+      - name: Install Conan
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          pip install "conan>=2.0"
+          conan profile detect --force
+
+      - name: Install Linux system dependencies
+        if: matrix.os == 'ubuntu-latest'
+        # On Linux we use system wxWidgets (see conanfile.py). The wxgtk packages
+        # bring in the required gtk3, gstreamer, cairo, pango... via apt deps.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            pkg-config \
+            libwxgtk3.2-dev \
+            libwxgtk-media3.2-dev
+
+      - name: Conan install
+        shell: bash
+        run: conan install . --build=missing -s build_type=Release
+
+      - name: Conan build
+        shell: bash
+        run: conan build . -s build_type=Release
+
+      - name: Locate build directory
+        id: locate
+        shell: bash
+        run: |
+          # conan cmake_layout: build/Release  (Linux/macOS) or build\Release\Release (Windows multi-config)
+          for CAND in "build/Release" "build/Release/Release" "build"; do
+            if [ -f "${CAND}/Chitr" ] || [ -f "${CAND}/Chitr.exe" ]; then
+              echo "build_dir=${CAND}" >> "$GITHUB_OUTPUT"
+              echo "Found build dir: ${CAND}"
+              ls -la "${CAND}"
+              exit 0
+            fi
+          done
+          echo "Could not find Chitr binary. Tree:" >&2
+          find build -maxdepth 4 -type f -name "Chitr*" -print >&2 || true
+          exit 1
+
+      - name: Package (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          STAGE="Chitr-linux-${{ matrix.arch }}-v${VERSION}"
+          BUILD_DIR="${{ steps.locate.outputs.build_dir }}"
+          mkdir -p "release/${STAGE}"
+          cp "${BUILD_DIR}/Chitr" "release/${STAGE}/Chitr"
+          chmod +x "release/${STAGE}/Chitr"
+          [ -d "${BUILD_DIR}/Fonts" ]  && cp -r "${BUILD_DIR}/Fonts"  "release/${STAGE}/"
+          [ -d "${BUILD_DIR}/Assets" ] && cp -r "${BUILD_DIR}/Assets" "release/${STAGE}/"
+          cp Readme.md LICENSE VERSION "release/${STAGE}/" 2>/dev/null || true
+          (cd release && zip -r "${STAGE}.zip" "${STAGE}")
+          ls -la release/
+
+      - name: Package (Windows)
+        if: matrix.os == 'windows-2022'
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $stage   = "Chitr-windows-${{ matrix.arch }}-v$version"
+          $build   = "${{ steps.locate.outputs.build_dir }}"
+          New-Item -ItemType Directory -Force -Path "release/$stage" | Out-Null
+          Copy-Item "$build/Chitr.exe" "release/$stage/Chitr.exe"
+          if (Test-Path "$build/Fonts")  { Copy-Item -Recurse "$build/Fonts"  "release/$stage/" }
+          if (Test-Path "$build/Assets") { Copy-Item -Recurse "$build/Assets" "release/$stage/" }
+          foreach ($f in @("Readme.md", "LICENSE", "VERSION")) {
+            if (Test-Path $f) { Copy-Item $f "release/$stage/" }
+          }
+          Compress-Archive -Path "release/$stage/*" -DestinationPath "release/$stage.zip" -Force
+          Get-ChildItem release
+
+      - name: Package (macOS)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          STAGE="Chitr-macos-${{ matrix.arch }}-v${VERSION}"
+          BUILD_DIR="${{ steps.locate.outputs.build_dir }}"
+          mkdir -p "release/${STAGE}"
+          cp "${BUILD_DIR}/Chitr" "release/${STAGE}/Chitr"
+          chmod +x "release/${STAGE}/Chitr"
+          [ -d "${BUILD_DIR}/Fonts" ]  && cp -r "${BUILD_DIR}/Fonts"  "release/${STAGE}/"
+          [ -d "${BUILD_DIR}/Assets" ] && cp -r "${BUILD_DIR}/Assets" "release/${STAGE}/"
+          # Ship the .icns alongside — makes it easy to build an .app bundle later.
+          [ -f "assets/MainIcon.icns" ] && cp "assets/MainIcon.icns" "release/${STAGE}/"
+          cp Readme.md LICENSE VERSION "release/${STAGE}/" 2>/dev/null || true
+          (cd release && zip -r "${STAGE}.zip" "${STAGE}")
+          ls -la release/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chitr-${{ matrix.name }}-v${{ steps.version.outputs.version }}
+          path: release/*.zip
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Collect zips
+        run: |
+          mkdir -p release
+          find dist -type f -name "*.zip" -exec cp {} release/ \;
+          echo "Files to attach:"
+          ls -la release/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Chitr ${{ github.ref_name }}
+          generate_release_notes: true
+          files: release/*.zip
