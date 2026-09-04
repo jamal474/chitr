@@ -52,8 +52,15 @@ MainFrame::MainFrame(const wxString &title) : wxFrame(NULL, wxID_ANY, title)
 }
 
 void MainFrame::LoadEmbeddedFont() {
-    wxString exeDir = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
-    wxString fontPath = exeDir + "/Fonts/material_v1.ttf";
+    // On macOS the app is a .app bundle and its runtime files live in
+    // Contents/Resources; wxStandardPaths::GetResourcesDir() returns that path.
+    // On Linux/Windows this resolves to the executable directory.
+#ifdef __APPLE__
+    wxString baseDir = wxStandardPaths::Get().GetResourcesDir();
+#else
+    wxString baseDir = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
+#endif
+    wxString fontPath = baseDir + "/Fonts/material_v1.ttf";
 
     if (!wxFileName::FileExists(fontPath)) {
         LOG_ERROR("Font file missing at: %s", fontPath);
@@ -84,10 +91,13 @@ void MainFrame::LoadImageHandlers() {
 }
 
 void MainFrame::LoadAppIcon() {
-    wxString exePath = wxStandardPaths::Get().GetExecutablePath();
-    wxString exeDir = wxFileName(exePath).GetPath();
+#ifdef __APPLE__
+    wxString baseDir = wxStandardPaths::Get().GetResourcesDir();
+#else
+    wxString baseDir = wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
+#endif
 
-    wxString iconPath = exeDir + "/Assets/MainIcon.png";
+    wxString iconPath = baseDir + "/Assets/MainIcon.png";
 
     if (wxFileName::FileExists(iconPath)) {
         wxIcon appIcon;

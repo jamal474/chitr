@@ -99,7 +99,31 @@ conan build .
 ./build/Release/Chitr
 ```
 
-*(Use `.\build\Release\Chitr.exe` on Windows)*
+*(Use `.\build\Release\Chitr.exe` on Windows. On macOS the local build produces `./build/Release/Chitr.app` — double-click it, or run `open ./build/Release/Chitr.app`.)*
+
+## Running the downloaded macOS build
+
+The macOS builds published on the Releases page are **not signed with an
+Apple Developer ID**. macOS Gatekeeper will refuse to open the app on
+first launch with a message like:
+
+> "Chitr" cannot be opened because it is from an unidentified developer.
+
+This is expected for an open-source unsigned build. Two ways to work around
+it — you only need to do this once per download:
+
+**Option A — one-line Terminal command (recommended):**
+```shell
+xattr -dr com.apple.quarantine /path/to/Chitr.app
+```
+After that, double-click `Chitr.app` as normal.
+
+**Option B — right-click to Open:** In Finder, right-click (or Control-click)
+`Chitr.app` and choose **Open**. Confirm the dialog. macOS remembers this
+choice for that copy of the app.
+
+A copy of this notice is also included in each macOS release zip as
+`README-macOS.txt`.
 
 ## Supported Media Formats
 

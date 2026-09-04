@@ -39,7 +39,31 @@ set(SOURCES
     src/component/RoundedText.cpp
 )
 
-add_executable(Chitr ${SOURCES})
+# On macOS, build as a proper .app bundle so Finder shows it as an app.
+# The icon (MainIcon.icns) is added as a bundle resource so it becomes the
+# Finder / Dock icon; runtime assets are still copied by the POST_BUILD steps
+# below but now land in Contents/Resources instead of alongside the binary.
+if(APPLE)
+    set(MACOS_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/MainIcon.icns")
+    add_executable(Chitr MACOSX_BUNDLE ${SOURCES} ${MACOS_ICON})
+    set_source_files_properties(${MACOS_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    # Read the version out of the VERSION file so bundle metadata stays in sync.
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION")
+        file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" CHITR_VERSION)
+        string(STRIP "${CHITR_VERSION}" CHITR_VERSION)
+    else()
+        set(CHITR_VERSION "0.0.0")
+    endif()
+    set_target_properties(Chitr PROPERTIES
+        MACOSX_BUNDLE_BUNDLE_NAME           "Chitr"
+        MACOSX_BUNDLE_GUI_IDENTIFIER        "com.chitr.chitr"
+        MACOSX_BUNDLE_BUNDLE_VERSION        "${CHITR_VERSION}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING  "${CHITR_VERSION}"
+        MACOSX_BUNDLE_ICON_FILE             "MainIcon.icns"
+    )
+else()
+    add_executable(Chitr ${SOURCES})
+endif()
 
 if(MSVC)
     set_target_properties(Chitr PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")
@@ -57,24 +81,29 @@ target_compile_options(Chitr PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W0>
 )
 
+# Runtime asset destination:
+#   * macOS bundle -> Chitr.app/Contents/Resources
+#   * Linux/Windows -> sibling folder of the executable
+if(APPLE)
+    set(CHITR_RESOURCE_DIR "$<TARGET_FILE_DIR:Chitr>/../Resources")
+else()
+    set(CHITR_RESOURCE_DIR "$<TARGET_FILE_DIR:Chitr>")
+endif()
+
 set(FONT_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/assets/font_ttf/material_v1.ttf")
 add_custom_command(TARGET Chitr POST_BUILD
-   
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Chitr>/Fonts"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CHITR_RESOURCE_DIR}/Fonts"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${FONT_SOURCE}"
-    "$<TARGET_FILE_DIR:Chitr>/Fonts/material_v1.ttf"
-    
-    COMMENT "Copying Fonts to output directory"
+        "${FONT_SOURCE}"
+        "${CHITR_RESOURCE_DIR}/Fonts/material_v1.ttf"
+    COMMENT "Copying Fonts"
 )
 
 set(ICON_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/assets/MainIcon.png")
 add_custom_command(TARGET Chitr POST_BUILD
-   
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Chitr>/Assets"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CHITR_RESOURCE_DIR}/Assets"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${ICON_SOURCE}"
-    "$<TARGET_FILE_DIR:Chitr>/Assets/MainIcon.png"
-    
-    COMMENT "Copying Icon to output directory"
+        "${ICON_SOURCE}"
+        "${CHITR_RESOURCE_DIR}/Assets/MainIcon.png"
+    COMMENT "Copying Icon"
 )

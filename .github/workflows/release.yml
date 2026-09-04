@@ -110,17 +110,18 @@ jobs:
         id: locate
         shell: bash
         run: |
-          # conan cmake_layout: build/Release  (Linux/macOS) or build\Release\Release (Windows multi-config)
+          # conan cmake_layout: build/Release (Linux/macOS) or build\Release\Release (Windows multi-config).
+          # On macOS the artefact is a Chitr.app bundle (directory), on Linux/Windows a plain binary.
           for CAND in "build/Release" "build/Release/Release" "build"; do
-            if [ -f "${CAND}/Chitr" ] || [ -f "${CAND}/Chitr.exe" ]; then
+            if [ -f "${CAND}/Chitr" ] || [ -f "${CAND}/Chitr.exe" ] || [ -d "${CAND}/Chitr.app" ]; then
               echo "build_dir=${CAND}" >> "$GITHUB_OUTPUT"
               echo "Found build dir: ${CAND}"
               ls -la "${CAND}"
               exit 0
             fi
           done
-          echo "Could not find Chitr binary. Tree:" >&2
-          find build -maxdepth 4 -type f -name "Chitr*" -print >&2 || true
+          echo "Could not find Chitr binary or .app bundle. Tree:" >&2
+          find build -maxdepth 4 \( -name "Chitr*" \) -print >&2 || true
           exit 1
 
       - name: Package (Linux)
@@ -164,14 +165,27 @@ jobs:
           STAGE="Chitr-macos-${{ matrix.arch }}-v${VERSION}"
           BUILD_DIR="${{ steps.locate.outputs.build_dir }}"
           mkdir -p "release/${STAGE}"
-          cp "${BUILD_DIR}/Chitr" "release/${STAGE}/Chitr"
-          chmod +x "release/${STAGE}/Chitr"
-          [ -d "${BUILD_DIR}/Fonts" ]  && cp -r "${BUILD_DIR}/Fonts"  "release/${STAGE}/"
-          [ -d "${BUILD_DIR}/Assets" ] && cp -r "${BUILD_DIR}/Assets" "release/${STAGE}/"
-          # Ship the .icns alongside — makes it easy to build an .app bundle later.
-          [ -f "assets/MainIcon.icns" ] && cp "assets/MainIcon.icns" "release/${STAGE}/"
+
+          # We build as a .app bundle on macOS (see CMakeLists.txt). The bundle
+          # is a directory that Finder treats as a single item; assets already
+          # live inside its Contents/Resources.
+          if [ -d "${BUILD_DIR}/Chitr.app" ]; then
+            cp -R "${BUILD_DIR}/Chitr.app" "release/${STAGE}/Chitr.app"
+            chmod +x "release/${STAGE}/Chitr.app/Contents/MacOS/Chitr"
+          else
+            echo "::error::Chitr.app bundle not found in ${BUILD_DIR}"
+            ls -la "${BUILD_DIR}"
+            exit 1
+          fi
+
+          # Docs + first-run notice explaining the Gatekeeper workaround
+          # (this build is unsigned; users need to strip the quarantine attribute
+          # once, or right-click -> Open the first time).
           cp Readme.md LICENSE VERSION "release/${STAGE}/" 2>/dev/null || true
-          (cd release && zip -r "${STAGE}.zip" "${STAGE}")
+          cp .github/release-templates/macos-readme.txt "release/${STAGE}/README-macOS.txt"
+
+          # -y preserves symlinks inside the .app bundle (important for wxWidgets frameworks).
+          (cd release && zip -yr "${STAGE}.zip" "${STAGE}")
           ls -la release/
 
       - name: Upload artifact
