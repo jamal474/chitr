@@ -1,0 +1,41 @@
+# Netlify config for the landing page in website/. The C++ app is not built here.
+#
+# The site lives under /chitr/ — the same path it answers on at the short
+# domain (https://sabo.sh/chitr/). Vite builds into website/build/chitr and
+# `publish` stays at build/, so public URLs and origin URLs match exactly and
+# the Cloudflare worker in front never has to rewrite a path.
+
+[build]
+  base = "website"
+  command = "npm run build"
+  publish = "build"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# "/chitr" with no trailing slash would otherwise hit the catch-all below and
+# be rewritten to "/chitr/chitr".
+[[redirects]]
+  from = "/chitr"
+  to = "/chitr/"
+  status = 301
+
+# SPA fallback, scoped to the sub-path. Existing files win over this rule, so
+# hashed assets under /chitr/assets/ are still served as files.
+[[redirects]]
+  from = "/chitr/*"
+  to = "/chitr/index.html"
+  status = 200
+
+# Anything left at the root — including a bare visit to the .netlify.app
+# host — is sent to the page's real home.
+[[redirects]]
+  from = "/*"
+  to = "/chitr/:splat"
+  status = 301
+  force = true
+
+[[headers]]
+  for = "/chitr/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

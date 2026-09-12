@@ -1,0 +1,8 @@
+node_modules
+build
+*.tsbuildinfo
+vite.config.ts.timestamp-*
+.DS_Store
+
+# Screenshots are served from ImageKit; this folder is the upload staging area.
+public/screenshots
